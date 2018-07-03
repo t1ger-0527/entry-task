@@ -1,0 +1,22 @@
+{
+  "name": "entry-task",
+  "version": "0.0.1",
+  "description": "Entry task at Shopee.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/t1ger-0527/entry-task.git"
+  },
+  "author": "t1ger",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/t1ger-0527/entry-task/issues"
+  },
+  "homepage": "https://github.com/t1ger-0527/entry-task#readme",
+  "dependencies": {
+    "prettier": "^1.13.7"
+  }
+}
