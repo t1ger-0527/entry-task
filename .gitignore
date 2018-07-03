@@ -1,1 +1,4 @@
 node_modules/
+hyperapp-impl/build.js
+
+*.logs
