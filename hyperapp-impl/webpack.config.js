@@ -15,7 +15,11 @@ module.exports = {
         include: [
           path.resolve(__dirname),
         ],
-        loader: "babel-loader"
+        loader: "babel-loader",
+        options: {
+          presets: [["env"]],
+          plugins: ["transform-object-rest-spread"]
+        }
       }
     ]
   }
