@@ -73,7 +73,6 @@ export function app(state, actions, view, container) {
   function renderChunk2(parentElement, rootElement, oldNode, newNode) {
     // no reuse
     const newElement = createElement(newNode);
-    debugger
     const newRootElement = parentElement.insertBefore(newElement, rootElement);
 
     if (oldNode != null) {
@@ -91,34 +90,96 @@ export function app(state, actions, view, container) {
    * @returns {*}
    */
   function renderChunk(parentElement, rootElement, oldNode, newNode) {
-    console.log("render chunck", parentElement, rootElement, oldNode, newNode);
     if (oldNode === newNode) {
       // do nothing
-    } else if (oldNode == null || oldNode.nodeName !== newNode.nodeName) {
+    } else if (
+      oldNode == null ||
+      rootElement == null ||
+      oldNode.nodeName !== newNode.nodeName
+    ) {
       // no reuse when the nodeName is different
       const newElement = createElement(newNode);
-      const newRootElement = parentElement.insertBefore(newElement, rootElement);
+      const newRootElement = parentElement.insertBefore(
+        newElement,
+        rootElement
+      );
 
       if (oldNode != null) {
         removeElement(parentElement, rootElement, oldNode);
       }
-      return newRootElement
+      return newRootElement;
     } else if (oldNode.nodeName == null) {
       // text node
-      rootElement.nodeValue = newNode
-    } else {
+      rootElement.nodeValue = newNode;
+    } else if (rootElement.childNodes) {
       // should update element rather than remove and insert.
-      console.log("reusing", oldNode, newNode);
       // first update the element's attributes.
       updateElement(rootElement, oldNode.attributes, newNode.attributes);
 
-      // differing design
-      // TODO: first test the structure, just do a fully re-render.
-      while (rootElement.firstChild) {
-        rootElement.removeChild(rootElement.firstChild);
-      }
+      // first we collect nessisary information into a map
+      const newChildren = newNode.children.map(resolveNode);
+      let oldChildren = oldNode.children;
+      let oldChildrenElements = [];
+      const oldKeyedChildrenMap = {};
+      oldChildren.map((child, index) => {
+        const key = getKey(child);
+        if (key != null) {
+          oldKeyedChildrenMap[key] = child;
+        }
+        oldChildrenElements[index] = rootElement.childNodes[index];
+      });
 
-      renderChunk(rootElement, null, null, newNode)
+      // then we mark the element we are going to use.
+      newChildren.map(child => {
+        const key = getKey(child);
+        // we mark future using childrenMap as
+        if (key != null && oldKeyedChildrenMap[key]) {
+          oldKeyedChildrenMap[key].using = true;
+        }
+      });
+
+      // we remove the child we don't use.
+      oldChildren.map((child, index) => {
+        const key = getKey(child);
+        if (key != null && !oldKeyedChildrenMap[key].using) {
+          console.log('children', oldKeyedChildrenMap, oldChildren, newChildren)
+          if (oldChildrenElements[index]) {
+            removeElement(rootElement, oldChildrenElements[index], child);
+          } else {
+            // FIXME: why debugger triggered?
+            debugger
+          }
+          oldChildrenElements[index] = null
+          oldChildren[index] = null
+        }
+      });
+      oldChildrenElements = oldChildrenElements.filter(Boolean)
+      oldChildren = oldChildren.filter(Boolean)
+
+      // we iterate through new children, insert or update.
+      newChildren.map((child, index) => {
+        const key = getKey(child);
+        if (key == null || !oldKeyedChildrenMap[key]) {
+          // nothing we chan reuse, create.
+          renderChunk(rootElement, oldChildrenElements[index], oldChildren[index], child);
+        } else {
+          // we can reuse, then reuse.
+          const oldChild = oldKeyedChildrenMap[key];
+          const oldChildElementIndex = oldChildren.findIndex(
+            c => getKey(c) === key
+          );
+          const oldChildElement = oldChildrenElements[oldChildElementIndex];
+          renderChunk(rootElement, oldChildElement, oldChild, child);
+        }
+      });
+
+      // FIXME: differing design
+      // FIXME: first test the structure, just do a fully re-render.
+      // while (rootElement.firstChild) {
+      //   rootElement.removeChild(rootElement.firstChild);
+      // }
+      //
+      // renderChunk(rootElement, null, null, newNode)
     }
     return rootElement;
   }
@@ -234,11 +295,12 @@ export function app(state, actions, view, container) {
 
         element.events[eventName] = value;
 
-        if (value && !oldValue) {
-          // unload the old listener
-          element.addEventListener(eventName, eventListener);
+        if (value) {
+          if (!oldValue) {
+            element.addEventListener(eventName, eventListener)
+          }
         } else {
-          element.removeEventListener(eventName, eventListener);
+          element.removeEventListener(eventName, eventListener)
         }
       }
       if (value === null || value === false) {
