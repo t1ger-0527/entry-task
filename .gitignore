@@ -1,4 +1,6 @@
 node_modules/
 hyperapp-impl/build.js
+.cache/
+dist/
 
 *.logs

@@ -8,8 +8,9 @@
  */
 
 // Create and return a new Element
-export function h(name, attributes = {}, ...children) {
+export function h(name, attributes = {}, children, ...otherChildren) {
   if (typeof name === "function") return name(attributes, children);
+  children = Array.isArray(children) ? children.concat(otherChildren) : [children].concat(otherChildren)
   return {
     nodeName: name,
     attributes,
@@ -32,18 +33,26 @@ export function h(name, attributes = {}, ...children) {
 export function app(state, actions, view, container) {
   // the main code here
   let globalState = { ...state };
-  let rootElement = null;
-  let oldNode = null;
+  let globalRootElement = null;
+  let globalOldNode = null;
   // plain action functions should be wired,
   // so that actions will trigger state change and re-render.
   const wiredActions = wireStateToActions([], globalState, { ...actions });
   // Life cycle events
   const lifeCycleEvents = [];
 
+  renderOnNextTick()
+  // return actions so you can call actions from the outside.
+  return wiredActions;
+  // script ends here, below are function definitions.
+
   function render() {
     const newNode = resolveNode(view);
-    renderChunk(container, view, oldNode, newNode);
-    oldNode = newNode;
+    globalRootElement = renderChunk(container, globalRootElement, globalOldNode, newNode);
+    globalOldNode = newNode;
+    // clear all live cycle events (mostly oncreate events)
+    // but without differing, lifecycle would just triggered every update.
+    while (lifeCycleEvents.length) lifeCycleEvents.pop()()
   }
 
   function resolveNode(node) {
@@ -54,13 +63,29 @@ export function app(state, actions, view, container) {
         : "";
   }
 
+  /**
+   * differing
+   * @param parentElement, the container you want newNode to be in.
+   * @param rootElement, the element that previously rendered by newNode
+   * @param oldNode, the previous version of v-node
+   * @param newNode, the version of v-node you want to render
+   * @returns {*}
+   */
   function renderChunk(parentElement, rootElement, oldNode, newNode) {
-    const newElement = createElement(newNode)
-    parentElement.insertBefore(newElement, rootElement)
+    if (oldNode === newNode) {
+      // do nothing
+    } else {
+      /**
+       * we impl the chunk re-rendering through what?
+       */
+      const newElement = createElement(newNode)
+      rootElement = parentElement.insertBefore(newElement, rootElement)
 
-    if (oldNode != null) {
-      removeElement(parentElement, rootElement, oldNode)
+      if (oldNode != null) {
+        removeElement(parentElement, rootElement, oldNode)
+      }
     }
+    return rootElement
   }
 
   function removeElement(parent, element, node) {
@@ -116,22 +141,59 @@ export function app(state, actions, view, container) {
         lifeCycleEvents.push(() => attributes.oncreate(element));
       }
 
-      children.map((child, index) => {
-        child = resolveNode(child);
-        node.children[index] = child;
-        element.appendChild(createElement(child), isSvg);
-      });
-
       Object.keys(attributes).map(key =>
         updateAttribute(element, key, attributes[key], null, isSvg)
       );
     }
 
+    if (children) {
+      children.map((child, index) => {
+        child = resolveNode(child);
+        node.children[index] = child;
+        element.appendChild(createElement(child), isSvg);
+      });
+    }
+
     return element;
   }
 
+  // use synthetic event here to improve performance
+  function eventListener(event) {
+    return event.currentTarget.events[event.type](event)
+  }
+
   // TODO: updates a element's attributes. with binding all the event listeners.
-  function updateAttribute(element, name, value, oldValue) {}
+  function updateAttribute(element, name, value, oldValue) {
+    if (name === 'key') {
+      // TODO: key is not useful now
+    } else if (name === 'style') {
+      Object.assign(element.style, value)
+    } else {
+      // bind the event listener
+      if (name.startsWith('on')) {
+        const eventName = name.substr(2)
+        if (!element.events) {
+          element.events = {}
+        } else if (!oldValue) {
+          oldValue = element.events[eventName]
+        }
+
+        element.events[eventName] = value
+
+        if (value && !oldValue) {
+          // unload the old listener
+          element.addEventListener(eventName, eventListener)
+        } else {
+          element.removeEventListener(eventName, eventListener)
+        }
+      }
+      if (value === null || value === false) {
+        element.removeAttribute(name)
+      } else {
+        element.setAttribute(name, value)
+      }
+    }
+  }
 
   // impl with namespace feature.
   // Can easily update small part of state if action is nested under the same path as the state.
@@ -143,7 +205,7 @@ export function app(state, actions, view, container) {
           let result = originalAction(...args);
           if (typeof result === "function") {
             state = getPartialState(path, globalState);
-            result = result(state);
+            result = result(state, wiredActions);
           }
 
           function updateStateImpl(newState) {
@@ -157,13 +219,14 @@ export function app(state, actions, view, container) {
             }
           }
 
-          if (result.then) {
+          if (result && result.then) {
             result.then(newState => {
               updateStateImpl(newState);
             });
           } else {
             updateStateImpl(result);
           }
+          return result
         };
       } else {
         wireStateToActions(
@@ -173,6 +236,7 @@ export function app(state, actions, view, container) {
         );
       }
     });
+    return actions
   }
 
   // get state in the path
@@ -184,6 +248,7 @@ export function app(state, actions, view, container) {
     return result;
   }
 
+  // TODO: 不能更新局部的引用，需要依据引用判断状态的更新。
   function setPartialState(path, value, source) {
     let target = {};
     if (path.length) {
@@ -199,7 +264,4 @@ export function app(state, actions, view, container) {
   function renderOnNextTick() {
     setTimeout(render);
   }
-
-  // return actions so you can call actions from the outside.
-  return actions;
 }
