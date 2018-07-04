@@ -10,7 +10,9 @@
 // Create and return a new Element
 export function h(name, attributes = {}, children, ...otherChildren) {
   if (typeof name === "function") return name(attributes, children);
-  children = Array.isArray(children) ? children.concat(otherChildren) : [children].concat(otherChildren)
+  children = Array.isArray(children)
+    ? children.concat(otherChildren)
+    : [children].concat(otherChildren);
   return {
     nodeName: name,
     attributes,
@@ -41,18 +43,23 @@ export function app(state, actions, view, container) {
   // Life cycle events
   const lifeCycleEvents = [];
 
-  renderOnNextTick()
+  renderOnNextTick();
   // return actions so you can call actions from the outside.
   return wiredActions;
   // script ends here, below are function definitions.
 
   function render() {
     const newNode = resolveNode(view);
-    globalRootElement = renderChunk(container, globalRootElement, globalOldNode, newNode);
+    globalRootElement = renderChunk(
+      container,
+      globalRootElement,
+      globalOldNode,
+      newNode
+    );
     globalOldNode = newNode;
     // clear all live cycle events (mostly oncreate events)
     // but without differing, lifecycle would just triggered every update.
-    while (lifeCycleEvents.length) lifeCycleEvents.pop()()
+    while (lifeCycleEvents.length) lifeCycleEvents.pop()();
   }
 
   function resolveNode(node) {
@@ -63,6 +70,18 @@ export function app(state, actions, view, container) {
         : "";
   }
 
+  function renderChunk2(parentElement, rootElement, oldNode, newNode) {
+    // no reuse
+    const newElement = createElement(newNode);
+    debugger
+    const newRootElement = parentElement.insertBefore(newElement, rootElement);
+
+    if (oldNode != null) {
+      removeElement(parentElement, rootElement, oldNode);
+    }
+
+    return newRootElement;
+  }
   /**
    * differing
    * @param parentElement, the container you want newNode to be in.
@@ -72,52 +91,72 @@ export function app(state, actions, view, container) {
    * @returns {*}
    */
   function renderChunk(parentElement, rootElement, oldNode, newNode) {
+    console.log("render chunck", parentElement, rootElement, oldNode, newNode);
     if (oldNode === newNode) {
       // do nothing
-    } else {
-      /**
-       * we impl the chunk re-rendering through what?
-       */
-      const newElement = createElement(newNode)
-      rootElement = parentElement.insertBefore(newElement, rootElement)
+    } else if (oldNode == null || oldNode.nodeName !== newNode.nodeName) {
+      // no reuse when the nodeName is different
+      const newElement = createElement(newNode);
+      const newRootElement = parentElement.insertBefore(newElement, rootElement);
 
       if (oldNode != null) {
-        removeElement(parentElement, rootElement, oldNode)
+        removeElement(parentElement, rootElement, oldNode);
       }
+      return newRootElement
+    } else if (oldNode.nodeName == null) {
+      // text node
+      rootElement.nodeValue = newNode
+    } else {
+      // should update element rather than remove and insert.
+      console.log("reusing", oldNode, newNode);
+      // first update the element's attributes.
+      updateElement(rootElement, oldNode.attributes, newNode.attributes);
+
+      // differing design
+      // TODO: first test the structure, just do a fully re-render.
+      while (rootElement.firstChild) {
+        rootElement.removeChild(rootElement.firstChild);
+      }
+
+      renderChunk(rootElement, null, null, newNode)
     }
-    return rootElement
+    return rootElement;
+  }
+
+  function getKey(node) {
+    return node ? node.key : null;
   }
 
   function removeElement(parent, element, node) {
-     function removeImpl() {
-       const child = removeChildren(element, node)
-       parent.removeChild(child)
-     }
+    function removeImpl() {
+      const child = removeChildren(element, node);
+      parent.removeChild(child);
+    }
 
-     const {attributes} = node
+    const { attributes } = node;
     if (attributes && attributes.onremove) {
       // onremove is a special event in hyperapp.
       // It is usually used for animation.
       // you animate, and then call the callback to actually remove it.
-      attributes.onremove(element, removeImpl)
+      attributes.onremove(element, removeImpl);
     } else {
-       removeImpl()
+      removeImpl();
     }
   }
 
   function removeChildren(element, node) {
-    const {attributes, children} = node
+    const { attributes, children } = node;
     if (attributes) {
       children.map((_, i) => {
-        removeChildren(element.childNodes[i], node.children[i])
-      })
+        removeChildren(element.childNodes[i], node.children[i]);
+      });
 
       // trigger destroy immediately, but trigger create with a stack
       if (attributes.ondestroy) {
-        attributes.ondestroy(element)
+        attributes.ondestroy(element);
       }
     }
-    return element
+    return element;
   }
 
   function createElement(node, isSvg) {
@@ -159,38 +198,53 @@ export function app(state, actions, view, container) {
 
   // use synthetic event here to improve performance
   function eventListener(event) {
-    return event.currentTarget.events[event.type](event)
+    return event.currentTarget.events[event.type](event);
   }
 
-  // TODO: updates a element's attributes. with binding all the event listeners.
+  // update an element
+  function updateElement(element, oldAttributes, attributes) {
+    const allAttributes = { ...oldAttributes, ...attributes };
+    Object.keys(allAttributes).map(attributeName => {
+      const newAttribute = attributes[attributeName];
+      const oldAttribute =
+        attributeName === "checked" || attributeName === "value"
+          ? element[attributeName]
+          : oldAttributes[attributeName];
+      if (newAttribute !== oldAttribute) {
+        updateAttribute(element, attributeName, newAttribute, oldAttribute);
+      }
+    });
+  }
+
+  // update a element's attributes. with binding all the event listeners.
   function updateAttribute(element, name, value, oldValue) {
-    if (name === 'key') {
+    if (name === "key") {
       // TODO: key is not useful now
-    } else if (name === 'style') {
-      Object.assign(element.style, value)
+    } else if (name === "style") {
+      Object.assign(element.style, value);
     } else {
       // bind the event listener
-      if (name.startsWith('on')) {
-        const eventName = name.substr(2)
+      if (name.startsWith("on")) {
+        const eventName = name.substr(2);
         if (!element.events) {
-          element.events = {}
+          element.events = {};
         } else if (!oldValue) {
-          oldValue = element.events[eventName]
+          oldValue = element.events[eventName];
         }
 
-        element.events[eventName] = value
+        element.events[eventName] = value;
 
         if (value && !oldValue) {
           // unload the old listener
-          element.addEventListener(eventName, eventListener)
+          element.addEventListener(eventName, eventListener);
         } else {
-          element.removeEventListener(eventName, eventListener)
+          element.removeEventListener(eventName, eventListener);
         }
       }
       if (value === null || value === false) {
-        element.removeAttribute(name)
+        element.removeAttribute(name);
       } else {
-        element.setAttribute(name, value)
+        element.setAttribute(name, value);
       }
     }
   }
@@ -226,7 +280,7 @@ export function app(state, actions, view, container) {
           } else {
             updateStateImpl(result);
           }
-          return result
+          return result;
         };
       } else {
         wireStateToActions(
@@ -236,7 +290,7 @@ export function app(state, actions, view, container) {
         );
       }
     });
-    return actions
+    return actions;
   }
 
   // get state in the path
