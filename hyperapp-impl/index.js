@@ -209,14 +209,6 @@ export function app(state, actions, view, container) {
           renderChunk(rootElement, oldChildElement, oldChild, child);
         }
       });
-
-      // FIXME: differing design
-      // FIXME: first test the structure, just do a fully re-render.
-      // while (rootElement.firstChild) {
-      //   rootElement.removeChild(rootElement.firstChild);
-      // }
-      //
-      // renderChunk(rootElement, null, null, newNode)
     }
     return rootElement;
   }
@@ -323,7 +315,6 @@ export function app(state, actions, view, container) {
   // update a element's attributes. with binding all the event listeners.
   function updateAttribute(element, name, value, oldValue) {
     if (name === "key") {
-      // TODO: key is not useful now
     } else if (name === "style") {
       Object.assign(element.style, value);
     } else {
@@ -407,7 +398,6 @@ export function app(state, actions, view, container) {
     return result;
   }
 
-  // TODO: 不能更新局部的引用，需要依据引用判断状态的更新。
   function setPartialState(path, value, source) {
     let target = {};
     if (path.length) {
