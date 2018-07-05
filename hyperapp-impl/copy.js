@@ -297,7 +297,7 @@ export function app(state, actions, view, container) {
         removeElement(parent, element, oldNode)
       }
 
-      element = newElement
+      element = newElement;
     } else if (oldNode.nodeName == null) {
       element.nodeValue = node
     } else {

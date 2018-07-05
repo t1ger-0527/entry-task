@@ -1,23 +1,4 @@
 import { app, h } from "../hyperapp-impl";
-
-// const state = {
-//   count: 0
-// }
-//
-// const actions = {
-//   down: value => state => console.log(value) || ({ count: state.count - value }),
-//   up: value => state => console.log(value) || ({ count: state.count + value })
-// }
-//
-// const view = (state, actions) => (
-//   <div>
-//     <h1>{state.count}</h1>
-//     <button onclick={() => actions.down(1)}>-</button>
-//     <button onclick={() => actions.up(1)}>+</button>
-//   </div>
-// )
-//
-// app(state, actions, view, document.body)
 /**
  * Default Emoji List
  * The complete list will be fetched from a JSON file when main container is created
@@ -43,7 +24,7 @@ const filterEmoji = (searchText, maxResults) => {
       return false;
     })
     .slice(0, maxResults);
-  return result
+  return result;
 };
 
 const state = {
@@ -59,7 +40,7 @@ const actions = {
       .then(data => data.json())
       .then(data => {
         emojiList = data;
-        return {filteredEmoji: filterEmoji('', 20)}
+        return { filteredEmoji: filterEmoji("", 20) };
       });
   }
 };
@@ -87,10 +68,5 @@ const view = (state, actions) => (
   </div>
 );
 
-const { getEmojiList } = app(
-  state,
-  actions,
-  view,
-  document.documentElement
-);
-getEmojiList()
+const { getEmojiList } = app(state, actions, view, document.documentElement);
+getEmojiList();
