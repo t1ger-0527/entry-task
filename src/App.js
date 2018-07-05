@@ -1,7 +1,5 @@
-import {h} from '../hyperapp-impl'
+import { h } from '../hyperapp-impl'
 
 export default (state, actions) => {
-  return (
-    <div>Hello world.</div>
-  )
+  return <div>Hello world.</div>
 }
