@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "NODE_ENV=development parcel src/index.html",
+    "dev": "nodemon ./server/index.js | NODE_ENV=development parcel src/index.html",
     "precommit": "node ./node_modules/.bin/prettier ./src/**.js --write",
     "build": "NODE_ENV=production parcel build src/index.html"
   },
@@ -31,7 +31,10 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-plugin-transform-react-jsx": "^6.24.1",
     "babel-preset-env": "^1.7.0",
+    "express": "^4.16.3",
+    "faker": "^4.1.0",
     "husky": "^0.14.3",
+    "nodemon": "^1.17.5",
     "parcel-bundler": "^1.9.4",
     "prettier": "^1.13.7",
     "webpack": "^4.14.0",
