@@ -6,6 +6,7 @@
  *  - key
  * @returns {*}
  */
+import shallowEqual from 'shallow-equal/objects'
 
 // Create and return a new Element
 export function h(name, attributes = {}, children, ...otherChildren) {
@@ -139,19 +140,11 @@ export function app(state, actions, view, container) {
       });
 
       // we remove the child we don't use.
-      // console.log("start removing old children: ", oldChildren);
-      // console.log("old child elements: ", oldChildrenElements);
-      // console.log("new children: ", newChildren);
       oldChildren.map((child, index) => {
         const key = getKey(child);
         if (key != null && !oldKeyedChildrenMap[key].using) {
-          // console.log("found a child to remove", child);
           if (oldChildrenElements[index]) {
-            // console.log("removing element: ", oldChildrenElements[index]);
             removeElement(rootElement, oldChildrenElements[index], child);
-          } else {
-            // FIXME: why debugger triggered?
-            // debugger;
           }
           oldChildrenElements[index].deleted = true;
           oldChildren[index].deleted = true;
@@ -172,7 +165,6 @@ export function app(state, actions, view, container) {
               getKey(c) === getKey(newChildren[nextReuseNodeIndex])
           )
         ];
-      console.log("reuse index", nextReuseNodeIndex, nextReuseElement);
       newChildren.map((child, index) => {
         const key = getKey(child);
         if (key == null) {
@@ -209,11 +201,6 @@ export function app(state, actions, view, container) {
                   getKey(c) === getKey(newChildren[nextReuseNodeIndex])
               )
             ];
-          console.log(
-            "reuse index update",
-            nextReuseNodeIndex,
-            nextReuseElement
-          );
           const oldChild = oldKeyedChildrenMap[key];
           const oldChildElementIndex = oldChildren.findIndex(
             c => getKey(c) === key
@@ -316,6 +303,7 @@ export function app(state, actions, view, container) {
 
   // update an element
   function updateElement(element, oldAttributes, attributes) {
+    if (shallowEqual(oldAttributes, attributes)) return
     const allAttributes = { ...oldAttributes, ...attributes };
     Object.keys(allAttributes).map(attributeName => {
       const newAttribute = attributes[attributeName];
@@ -327,6 +315,9 @@ export function app(state, actions, view, container) {
         updateAttribute(element, attributeName, newAttribute, oldAttribute);
       }
     });
+    if (attributes.onupdate) {
+      lifeCycleEvents.push(() => attributes.onupdate(element, oldAttributes, attributes))
+    }
   }
 
   // update a element's attributes. with binding all the event listeners.
