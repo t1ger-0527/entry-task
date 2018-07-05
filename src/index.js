@@ -59,7 +59,7 @@ const actions = {
       .then(data => data.json())
       .then(data => {
         emojiList = data;
-        actions.search("");
+        return {filteredEmoji: filterEmoji('', 20)}
       });
   }
 };
@@ -77,7 +77,7 @@ const EmojiList = emojis => {
 
 const view = (state, actions) => (
   <div class="container">
-    <h1>Emoji Search</h1>
+    <h1>Emoji Search {state.filteredEmoji.length}</h1>
     <input
       type="search"
       placeholder="Search..."
@@ -87,10 +87,10 @@ const view = (state, actions) => (
   </div>
 );
 
-const { getEmojiList, search } = app(
+const { getEmojiList } = app(
   state,
   actions,
   view,
   document.documentElement
 );
-getEmojiList().then(() => search(''))
+getEmojiList()

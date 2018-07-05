@@ -104,7 +104,7 @@ export function app(state, actions, view, container) {
         rootElement
       );
 
-      if (oldNode != null) {
+      if (rootElement != null) {
         removeElement(parentElement, rootElement, oldNode);
       }
       return newRootElement;
@@ -139,31 +139,81 @@ export function app(state, actions, view, container) {
       });
 
       // we remove the child we don't use.
+      // console.log("start removing old children: ", oldChildren);
+      // console.log("old child elements: ", oldChildrenElements);
+      // console.log("new children: ", newChildren);
       oldChildren.map((child, index) => {
         const key = getKey(child);
         if (key != null && !oldKeyedChildrenMap[key].using) {
-          console.log('children', oldKeyedChildrenMap, oldChildren, newChildren)
+          // console.log("found a child to remove", child);
           if (oldChildrenElements[index]) {
+            // console.log("removing element: ", oldChildrenElements[index]);
             removeElement(rootElement, oldChildrenElements[index], child);
           } else {
             // FIXME: why debugger triggered?
-            debugger
+            // debugger;
           }
-          oldChildrenElements[index] = null
-          oldChildren[index] = null
+          oldChildrenElements[index].deleted = true;
+          oldChildren[index].deleted = true;
         }
       });
-      oldChildrenElements = oldChildrenElements.filter(Boolean)
-      oldChildren = oldChildren.filter(Boolean)
+      oldChildrenElements = oldChildrenElements.filter(c => c && !c.deleted);
+      oldChildren = oldChildren.filter(c => c && !c.deleted);
 
       // we iterate through new children, insert or update.
+      let nextReuseNodeIndex = newChildren.findIndex(
+        c => oldKeyedChildrenMap[getKey(c)]
+      );
+      let nextReuseElement =
+        oldChildrenElements[
+          oldChildren.findIndex(
+            c =>
+              getKey(c) != null &&
+              getKey(c) === getKey(newChildren[nextReuseNodeIndex])
+          )
+        ];
+      console.log("reuse index", nextReuseNodeIndex, nextReuseElement);
       newChildren.map((child, index) => {
         const key = getKey(child);
-        if (key == null || !oldKeyedChildrenMap[key]) {
-          // nothing we chan reuse, create.
-          renderChunk(rootElement, oldChildrenElements[index], oldChildren[index], child);
+        if (key == null) {
+          // no key, just try to reuse.
+          renderChunk(
+            rootElement,
+            oldChildrenElements[index],
+            oldChildren[index],
+            child
+          );
+        } else if (!oldKeyedChildrenMap[key]) {
+          // has new key, create
+          if (index < nextReuseNodeIndex) {
+            const emptyElement = createElement({ nodeName: "unique" });
+            renderChunk(
+              rootElement,
+              rootElement.insertBefore(emptyElement, nextReuseElement),
+              null,
+              child
+            );
+          } else {
+            renderChunk(rootElement, null, oldChildren[index], child);
+          }
         } else {
           // we can reuse, then reuse.
+          nextReuseNodeIndex = newChildren
+            .slice(index + 1)
+            .findIndex(c => oldKeyedChildrenMap[getKey(c)]);
+          nextReuseElement =
+            oldChildrenElements[
+              oldChildren.findIndex(
+                c =>
+                  getKey(c) != null &&
+                  getKey(c) === getKey(newChildren[nextReuseNodeIndex])
+              )
+            ];
+          console.log(
+            "reuse index update",
+            nextReuseNodeIndex,
+            nextReuseElement
+          );
           const oldChild = oldKeyedChildrenMap[key];
           const oldChildElementIndex = oldChildren.findIndex(
             c => getKey(c) === key
@@ -190,11 +240,13 @@ export function app(state, actions, view, container) {
 
   function removeElement(parent, element, node) {
     function removeImpl() {
-      const child = removeChildren(element, node);
-      parent.removeChild(child);
+      if (node) {
+        element = removeChildren(element, node);
+      }
+      parent.removeChild(element);
     }
 
-    const { attributes } = node;
+    const { attributes } = node || {};
     if (attributes && attributes.onremove) {
       // onremove is a special event in hyperapp.
       // It is usually used for animation.
@@ -297,10 +349,10 @@ export function app(state, actions, view, container) {
 
         if (value) {
           if (!oldValue) {
-            element.addEventListener(eventName, eventListener)
+            element.addEventListener(eventName, eventListener);
           }
         } else {
-          element.removeEventListener(eventName, eventListener)
+          element.removeEventListener(eventName, eventListener);
         }
       }
       if (value === null || value === false) {
