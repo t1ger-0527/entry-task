@@ -10,7 +10,7 @@ export default {
   searchActivities: (activities) => (state) => {
     return {
       ...state,
-
+      // TODO: ends here
     }
   },
 }
