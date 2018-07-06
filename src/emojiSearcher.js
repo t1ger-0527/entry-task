@@ -75,4 +75,3 @@ const view = (state, actions) => (
 )
 
 app(state, actions, view, document.getElementById('root'))
-

@@ -1,5 +1,5 @@
 import { h } from '../hyperapp'
-import {Route} from '../router'
+import { Route } from '../router'
 import Index from './components/Index'
 import ActivityDetail from './components/ActivityDetail'
 
