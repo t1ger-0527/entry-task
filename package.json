@@ -8,6 +8,7 @@
     "dev:server": "nodemon ./server/index.js",
     "dev:client": "NODE_ENV=development parcel src/index.html",
     "dev": "npm run dev:server | npm run dev:client",
+    "dev:clean": "rm -rf dist/ .cache/ && npm run dev",
     "precommit": "node ./node_modules/.bin/prettier ./src/**.js --write",
     "build": "NODE_ENV=production parcel build src/index.html"
   },
@@ -22,6 +23,8 @@
   },
   "homepage": "https://github.com/t1ger-0527/entry-task#readme",
   "dependencies": {
+    "marked": "^0.4.0",
+    "mousetrap": "^1.6.2",
     "once": "^1.4.0",
     "shallow-equal": "^1.0.0",
     "state": "^0.2.0",

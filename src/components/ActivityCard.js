@@ -1,5 +1,8 @@
-import {h} from '../../hyperapp-impl'
+import {h} from '../../hyperapp'
+import {Link} from '../../router'
 
 export default ({activity, key}) => (
-  <div key={key}>{activity.title}</div>
+  <div key={key}>
+    <Link to={`/activities/${activity.id}`}>{activity.title}</Link>
+  </div>
 )

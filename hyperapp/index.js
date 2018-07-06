@@ -60,6 +60,7 @@ export function app(state, actions, view, container) {
       newNode,
     )
     globalOldNode = newNode
+    console.log('global old node updated:', globalOldNode)
     // clear all live cycle events (mostly oncreate events)
     // but without differing, lifecycle would just triggered every update.
     while (lifeCycleEvents.length) lifeCycleEvents.pop()()
@@ -70,7 +71,7 @@ export function app(state, actions, view, container) {
       ? resolveNode(node(globalState, wiredActions))
       : node != null
         ? node
-        : ''
+        : null
   }
 
   function renderChunk2(parentElement, rootElement, oldNode, newNode) {
@@ -95,14 +96,20 @@ export function app(state, actions, view, container) {
   function renderChunk(parentElement, rootElement, oldNode, newNode) {
     if (oldNode === newNode) {
       // do nothing
+    } else if (oldNode && oldNode.nodeName == null) {
+      parentElement.nodeValue = newNode
     } else if (
       oldNode == null ||
       rootElement == null ||
+      newNode == null ||
       oldNode.nodeName !== newNode.nodeName
     ) {
       // no reuse when the nodeName is different
       const newElement = createElement(newNode)
-      const newRootElement = parentElement.insertBefore(newElement, rootElement)
+      let newRootElement
+      if (newElement != null) {
+        newRootElement = parentElement.insertBefore(newElement, rootElement)
+      }
 
       if (rootElement != null) {
         removeElement(parentElement, rootElement, oldNode)
@@ -118,6 +125,7 @@ export function app(state, actions, view, container) {
 
       // first we collect nessisary information into a map
       const newChildren = newNode.children.map(resolveNode)
+      newNode.children = newChildren
       let oldChildren = oldNode.children
       let oldChildrenElements = []
       const oldKeyedChildrenMap = {}
@@ -133,20 +141,22 @@ export function app(state, actions, view, container) {
       newChildren.map((child) => {
         const key = getKey(child)
         // we mark future using childrenMap as
-        if (key != null && oldKeyedChildrenMap[key]) {
+        if (child && key != null && oldKeyedChildrenMap[key]) {
           oldKeyedChildrenMap[key].using = true
         }
       })
 
+      // TODO: some nodes not deleted
+      debugger
       // we remove the child we don't use.
       oldChildren.map((child, index) => {
         const key = getKey(child)
         if (key != null && !oldKeyedChildrenMap[key].using) {
           if (oldChildrenElements[index]) {
             removeElement(rootElement, oldChildrenElements[index], child)
+            oldChildrenElements[index].deleted = true
+            oldChildren[index].deleted = true
           }
-          oldChildrenElements[index].deleted = true
-          oldChildren[index].deleted = true
         }
       })
       oldChildrenElements = oldChildrenElements.filter((c) => c && !c.deleted)
@@ -251,6 +261,7 @@ export function app(state, actions, view, container) {
   }
 
   function createElement(node, isSvg) {
+    if (node == null) return node
     const { attributes, nodeName, children } = node
     isSvg = isSvg || nodeName === 'svg'
     let element
@@ -276,9 +287,13 @@ export function app(state, actions, view, container) {
     if (children) {
       children.map((child, index) => {
         child = resolveNode(child)
-        node.children[index] = child
-        element.appendChild(createElement(child), isSvg)
+        children[index] = child
+        if (child != null) {
+          node.children[index] = child
+          element.appendChild(createElement(child), isSvg)
+        }
       })
+      node.children = children
     }
 
     return element
@@ -291,6 +306,8 @@ export function app(state, actions, view, container) {
 
   // update an element
   function updateElement(element, oldAttributes, attributes) {
+    oldAttributes = oldAttributes == null ? {} : oldAttributes
+    attributes = attributes == null ? {} : attributes
     if (shallowEqual(oldAttributes, attributes)) return
     const allAttributes = { ...oldAttributes, ...attributes }
     Object.keys(allAttributes).map((attributeName) => {
@@ -377,7 +394,7 @@ export function app(state, actions, view, container) {
           return result
         }
       } else {
-        wireStateToActions(
+        actions[key] = wireStateToActions(
           path.concat(key),
           { ...state[key] },
           { ...actions[key] },

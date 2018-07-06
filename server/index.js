@@ -28,5 +28,9 @@ app.get('/activities', (req, res) => {
   })
 })
 
+app.get('/activities/:id', (req, res) => {
+  res.send(activity({id: req.params.id}))
+})
+
 app.listen(2333)
 console.log('Server running on 2333')
