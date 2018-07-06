@@ -3,14 +3,12 @@ import { merge, mergeIds } from '../helpers/state'
 export default {
   updateActivities: (activities) => (state) => {
     return {
-      ...state,
       activityMap: merge(state.activityMap, activities),
     }
   },
-  searchActivities: (activities) => (state) => {
+  searchActivitiesSuccess: (activities, mode = 'append') => (state) => {
     return {
-      ...state,
-      // TODO: ends here
+      searchActivityIds: mergeIds(state.searchActivityIds, activities, mode),
     }
   },
 }

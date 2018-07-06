@@ -10,16 +10,16 @@ import shallowEqual from 'shallow-equal/objects'
 
 // Create and return a new Element
 export function h(name, attributes = {}, children, ...otherChildren) {
-  if (typeof name === "function") return name(attributes, children);
+  if (typeof name === 'function') return name(attributes, children)
   children = Array.isArray(children)
     ? children.concat(otherChildren)
-    : [children].concat(otherChildren);
+    : [children].concat(otherChildren)
   return {
     nodeName: name,
     attributes,
     children,
-    key: attributes && attributes.key
-  };
+    key: attributes && attributes.key,
+  }
 }
 
 /**
@@ -35,52 +35,54 @@ export function h(name, attributes = {}, children, ...otherChildren) {
  */
 export function app(state, actions, view, container) {
   // the main code here
-  let globalState = { ...state };
-  let globalRootElement = null;
-  let globalOldNode = null;
+  let globalState = { ...state }
+  let globalRootElement = null
+  let globalOldNode = null
+  let renderScheduled = false
   // plain action functions should be wired,
   // so that actions will trigger state change and re-render.
-  const wiredActions = wireStateToActions([], globalState, { ...actions });
+  const wiredActions = wireStateToActions([], globalState, { ...actions })
   // Life cycle events
-  const lifeCycleEvents = [];
+  const lifeCycleEvents = []
 
-  renderOnNextTick();
+  renderOnNextTick()
   // return actions so you can call actions from the outside.
-  return wiredActions;
+  return wiredActions
   // script ends here, below are function definitions.
 
   function render() {
-    const newNode = resolveNode(view);
+    renderScheduled = false
+    const newNode = resolveNode(view)
     globalRootElement = renderChunk(
       container,
       globalRootElement,
       globalOldNode,
-      newNode
-    );
-    globalOldNode = newNode;
+      newNode,
+    )
+    globalOldNode = newNode
     // clear all live cycle events (mostly oncreate events)
     // but without differing, lifecycle would just triggered every update.
-    while (lifeCycleEvents.length) lifeCycleEvents.pop()();
+    while (lifeCycleEvents.length) lifeCycleEvents.pop()()
   }
 
   function resolveNode(node) {
-    return typeof node === "function"
+    return typeof node === 'function'
       ? resolveNode(node(globalState, wiredActions))
       : node != null
         ? node
-        : "";
+        : ''
   }
 
   function renderChunk2(parentElement, rootElement, oldNode, newNode) {
     // no reuse
-    const newElement = createElement(newNode);
-    const newRootElement = parentElement.insertBefore(newElement, rootElement);
+    const newElement = createElement(newNode)
+    const newRootElement = parentElement.insertBefore(newElement, rootElement)
 
     if (oldNode != null) {
-      removeElement(parentElement, rootElement, oldNode);
+      removeElement(parentElement, rootElement, oldNode)
     }
 
-    return newRootElement;
+    return newRootElement
   }
   /**
    * differing
@@ -99,248 +101,244 @@ export function app(state, actions, view, container) {
       oldNode.nodeName !== newNode.nodeName
     ) {
       // no reuse when the nodeName is different
-      const newElement = createElement(newNode);
-      const newRootElement = parentElement.insertBefore(
-        newElement,
-        rootElement
-      );
+      const newElement = createElement(newNode)
+      const newRootElement = parentElement.insertBefore(newElement, rootElement)
 
       if (rootElement != null) {
-        removeElement(parentElement, rootElement, oldNode);
+        removeElement(parentElement, rootElement, oldNode)
       }
-      return newRootElement;
+      return newRootElement
     } else if (oldNode.nodeName == null) {
       // text node
-      rootElement.nodeValue = newNode;
+      rootElement.nodeValue = newNode
     } else if (rootElement.childNodes) {
       // should update element rather than remove and insert.
       // first update the element's attributes.
-      updateElement(rootElement, oldNode.attributes, newNode.attributes);
+      updateElement(rootElement, oldNode.attributes, newNode.attributes)
 
       // first we collect nessisary information into a map
-      const newChildren = newNode.children.map(resolveNode);
-      let oldChildren = oldNode.children;
-      let oldChildrenElements = [];
-      const oldKeyedChildrenMap = {};
+      const newChildren = newNode.children.map(resolveNode)
+      let oldChildren = oldNode.children
+      let oldChildrenElements = []
+      const oldKeyedChildrenMap = {}
       oldChildren.map((child, index) => {
-        const key = getKey(child);
+        const key = getKey(child)
         if (key != null) {
-          oldKeyedChildrenMap[key] = child;
+          oldKeyedChildrenMap[key] = child
         }
-        oldChildrenElements[index] = rootElement.childNodes[index];
-      });
+        oldChildrenElements[index] = rootElement.childNodes[index]
+      })
 
       // then we mark the element we are going to use.
-      newChildren.map(child => {
-        const key = getKey(child);
+      newChildren.map((child) => {
+        const key = getKey(child)
         // we mark future using childrenMap as
         if (key != null && oldKeyedChildrenMap[key]) {
-          oldKeyedChildrenMap[key].using = true;
+          oldKeyedChildrenMap[key].using = true
         }
-      });
+      })
 
       // we remove the child we don't use.
       oldChildren.map((child, index) => {
-        const key = getKey(child);
+        const key = getKey(child)
         if (key != null && !oldKeyedChildrenMap[key].using) {
           if (oldChildrenElements[index]) {
-            removeElement(rootElement, oldChildrenElements[index], child);
+            removeElement(rootElement, oldChildrenElements[index], child)
           }
-          oldChildrenElements[index].deleted = true;
-          oldChildren[index].deleted = true;
+          oldChildrenElements[index].deleted = true
+          oldChildren[index].deleted = true
         }
-      });
-      oldChildrenElements = oldChildrenElements.filter(c => c && !c.deleted);
-      oldChildren = oldChildren.filter(c => c && !c.deleted);
+      })
+      oldChildrenElements = oldChildrenElements.filter((c) => c && !c.deleted)
+      oldChildren = oldChildren.filter((c) => c && !c.deleted)
 
       // we iterate through new children, insert or update.
       let nextReuseNodeIndex = newChildren.findIndex(
-        c => oldKeyedChildrenMap[getKey(c)]
-      );
+        (c) => oldKeyedChildrenMap[getKey(c)],
+      )
       let nextReuseElement =
         oldChildrenElements[
           oldChildren.findIndex(
-            c =>
+            (c) =>
               getKey(c) != null &&
-              getKey(c) === getKey(newChildren[nextReuseNodeIndex])
+              getKey(c) === getKey(newChildren[nextReuseNodeIndex]),
           )
-        ];
+        ]
       newChildren.map((child, index) => {
-        const key = getKey(child);
+        const key = getKey(child)
         if (key == null) {
           // no key, just try to reuse.
           renderChunk(
             rootElement,
             oldChildrenElements[index],
             oldChildren[index],
-            child
-          );
+            child,
+          )
         } else if (!oldKeyedChildrenMap[key]) {
           // has new key, create
           if (index < nextReuseNodeIndex) {
-            const emptyElement = createElement({ nodeName: "unique" });
+            const emptyElement = createElement({ nodeName: 'unique' })
             renderChunk(
               rootElement,
               rootElement.insertBefore(emptyElement, nextReuseElement),
               null,
-              child
-            );
+              child,
+            )
           } else {
-            renderChunk(rootElement, null, oldChildren[index], child);
+            renderChunk(rootElement, null, oldChildren[index], child)
           }
         } else {
           // we can reuse, then reuse.
           nextReuseNodeIndex = newChildren
             .slice(index + 1)
-            .findIndex(c => oldKeyedChildrenMap[getKey(c)]);
+            .findIndex((c) => oldKeyedChildrenMap[getKey(c)])
           nextReuseElement =
             oldChildrenElements[
               oldChildren.findIndex(
-                c =>
+                (c) =>
                   getKey(c) != null &&
-                  getKey(c) === getKey(newChildren[nextReuseNodeIndex])
+                  getKey(c) === getKey(newChildren[nextReuseNodeIndex]),
               )
-            ];
-          const oldChild = oldKeyedChildrenMap[key];
+            ]
+          const oldChild = oldKeyedChildrenMap[key]
           const oldChildElementIndex = oldChildren.findIndex(
-            c => getKey(c) === key
-          );
-          const oldChildElement = oldChildrenElements[oldChildElementIndex];
-          renderChunk(rootElement, oldChildElement, oldChild, child);
+            (c) => getKey(c) === key,
+          )
+          const oldChildElement = oldChildrenElements[oldChildElementIndex]
+          renderChunk(rootElement, oldChildElement, oldChild, child)
         }
-      });
+      })
     }
-    return rootElement;
+    return rootElement
   }
 
   function getKey(node) {
-    return node ? node.key : null;
+    return node ? node.key : null
   }
 
   function removeElement(parent, element, node) {
     function removeImpl() {
       if (node) {
-        element = removeChildren(element, node);
+        element = removeChildren(element, node)
       }
-      parent.removeChild(element);
+      parent.removeChild(element)
     }
 
-    const { attributes } = node || {};
+    const { attributes } = node || {}
     if (attributes && attributes.onremove) {
       // onremove is a special event in hyperapp.
       // It is usually used for animation.
       // you animate, and then call the callback to actually remove it.
-      attributes.onremove(element, removeImpl);
+      attributes.onremove(element, removeImpl)
     } else {
-      removeImpl();
+      removeImpl()
     }
   }
 
   function removeChildren(element, node) {
-    const { attributes, children } = node;
+    const { attributes, children } = node
     if (attributes) {
       children.map((_, i) => {
-        removeChildren(element.childNodes[i], node.children[i]);
-      });
+        removeChildren(element.childNodes[i], node.children[i])
+      })
 
       // trigger destroy immediately, but trigger create with a stack
       if (attributes.ondestroy) {
-        attributes.ondestroy(element);
+        attributes.ondestroy(element)
       }
     }
-    return element;
+    return element
   }
 
   function createElement(node, isSvg) {
-    const { attributes, nodeName, children } = node;
-    isSvg = isSvg || nodeName === "svg";
-    let element;
-    if (typeof node === "string" || typeof node === "number") {
-      element = document.createTextNode(node);
+    const { attributes, nodeName, children } = node
+    isSvg = isSvg || nodeName === 'svg'
+    let element
+    if (typeof node === 'string' || typeof node === 'number') {
+      element = document.createTextNode(node)
     } else if (isSvg) {
-      element = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        nodeName
-      );
+      element = document.createElementNS('http://www.w3.org/2000/svg', nodeName)
     } else {
-      element = document.createElement(nodeName);
+      element = document.createElement(nodeName)
     }
 
     if (attributes) {
       if (attributes.oncreate) {
         // produce oncreate events
-        lifeCycleEvents.push(() => attributes.oncreate(element));
+        lifeCycleEvents.push(() => attributes.oncreate(element))
       }
 
-      Object.keys(attributes).map(key =>
-        updateAttribute(element, key, attributes[key], null, isSvg)
-      );
+      Object.keys(attributes).map((key) =>
+        updateAttribute(element, key, attributes[key], null, isSvg),
+      )
     }
 
     if (children) {
       children.map((child, index) => {
-        child = resolveNode(child);
-        node.children[index] = child;
-        element.appendChild(createElement(child), isSvg);
-      });
+        child = resolveNode(child)
+        node.children[index] = child
+        element.appendChild(createElement(child), isSvg)
+      })
     }
 
-    return element;
+    return element
   }
 
   // use synthetic event here to improve performance
   function eventListener(event) {
-    return event.currentTarget.events[event.type](event);
+    return event.currentTarget.events[event.type](event)
   }
 
   // update an element
   function updateElement(element, oldAttributes, attributes) {
     if (shallowEqual(oldAttributes, attributes)) return
-    const allAttributes = { ...oldAttributes, ...attributes };
-    Object.keys(allAttributes).map(attributeName => {
-      const newAttribute = attributes[attributeName];
+    const allAttributes = { ...oldAttributes, ...attributes }
+    Object.keys(allAttributes).map((attributeName) => {
+      const newAttribute = attributes[attributeName]
       const oldAttribute =
-        attributeName === "checked" || attributeName === "value"
+        attributeName === 'checked' || attributeName === 'value'
           ? element[attributeName]
-          : oldAttributes[attributeName];
+          : oldAttributes[attributeName]
       if (newAttribute !== oldAttribute) {
-        updateAttribute(element, attributeName, newAttribute, oldAttribute);
+        updateAttribute(element, attributeName, newAttribute, oldAttribute)
       }
-    });
+    })
     if (attributes.onupdate) {
-      lifeCycleEvents.push(() => attributes.onupdate(element, oldAttributes, attributes))
+      lifeCycleEvents.push(() =>
+        attributes.onupdate(element, oldAttributes, attributes),
+      )
     }
   }
 
   // update a element's attributes. with binding all the event listeners.
   function updateAttribute(element, name, value, oldValue) {
-    if (name === "key") {
-    } else if (name === "style") {
-      Object.assign(element.style, value);
+    if (name === 'key') {
+    } else if (name === 'style') {
+      Object.assign(element.style, value)
     } else {
       // bind the event listener
-      if (name.startsWith("on")) {
-        const eventName = name.substr(2);
+      if (name.startsWith('on')) {
+        const eventName = name.substr(2)
         if (!element.events) {
-          element.events = {};
+          element.events = {}
         } else if (!oldValue) {
-          oldValue = element.events[eventName];
+          oldValue = element.events[eventName]
         }
 
-        element.events[eventName] = value;
+        element.events[eventName] = value
 
         if (value) {
           if (!oldValue) {
-            element.addEventListener(eventName, eventListener);
+            element.addEventListener(eventName, eventListener)
           }
         } else {
-          element.removeEventListener(eventName, eventListener);
+          element.removeEventListener(eventName, eventListener)
         }
       }
       if (value === null || value === false) {
-        element.removeAttribute(name);
+        element.removeAttribute(name)
       } else {
-        element.setAttribute(name, value);
+        element.setAttribute(name, value)
       }
     }
   }
@@ -348,14 +346,14 @@ export function app(state, actions, view, container) {
   // impl with namespace feature.
   // Can easily update small part of state if action is nested under the same path as the state.
   function wireStateToActions(path = [], state, actions) {
-    Object.keys(actions).map(key => {
-      if (typeof actions[key] === "function") {
-        const originalAction = actions[key];
+    Object.keys(actions).map((key) => {
+      if (typeof actions[key] === 'function') {
+        const originalAction = actions[key]
         actions[key] = (...args) => {
-          let result = originalAction(...args);
-          if (typeof result === "function") {
-            state = getPartialState(path, globalState);
-            result = result(state, wiredActions);
+          let result = originalAction(...args)
+          if (typeof result === 'function') {
+            state = getPartialState(path, globalState)
+            result = result(state, wiredActions)
           }
 
           function updateStateImpl(newState) {
@@ -363,54 +361,57 @@ export function app(state, actions, view, container) {
               globalState = setPartialState(
                 path,
                 { ...state, ...newState },
-                globalState
-              );
-              renderOnNextTick();
+                globalState,
+              )
+              renderOnNextTick()
             }
           }
 
           if (result && result.then) {
-            result.then(newState => {
-              updateStateImpl(newState);
-            });
+            result.then((newState) => {
+              updateStateImpl(newState)
+            })
           } else {
-            updateStateImpl(result);
+            updateStateImpl(result)
           }
-          return result;
-        };
+          return result
+        }
       } else {
         wireStateToActions(
           path.concat(key),
           { ...state[key] },
-          { ...actions[key] }
-        );
+          { ...actions[key] },
+        )
       }
-    });
-    return actions;
+    })
+    return actions
   }
 
   // get state in the path
   function getPartialState(path, state) {
-    let result = state;
-    path.map(key => {
-      result = result ? result[key] : null;
-    });
-    return result;
+    let result = state
+    path.map((key) => {
+      result = result ? result[key] : null
+    })
+    return result
   }
 
   function setPartialState(path, value, source) {
-    let target = {};
+    let target = {}
     if (path.length) {
       target[path[0]] =
         path.length > 1
           ? setPartialState(path.slice(1), value, source[path[0]])
-          : value;
-      return { ...source, ...target };
+          : value
+      return { ...source, ...target }
     }
-    return value;
+    return value
   }
 
   function renderOnNextTick() {
-    setTimeout(render);
+    if (!renderScheduled) {
+      renderScheduled = true
+      setTimeout(render)
+    }
   }
 }
