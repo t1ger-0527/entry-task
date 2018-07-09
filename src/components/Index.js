@@ -2,18 +2,18 @@ import once from 'once'
 import { h } from '../../hyperapp'
 import ActivityCard from './ActivityCard'
 
-const fetchActivity = once((query = '', actions) => {
+const fetchActivity = (query = '', actions) => {
   fetch('http://localhost:2333/activities')
     .then((res) => res.json())
     .then(({ data: activities }) => {
       actions.updateActivities(activities)
       actions.searchActivitiesSuccess(activities, 'replace')
     })
-})
-
-const handleIndexPageCreate = (element, actions, state) => {
-  fetchActivity('', actions)
 }
+
+const handleIndexPageCreate = once((element, actions, state) => {
+  fetchActivity('', actions)
+})
 
 export default () => (state, actions) => {
   const activities = state.searchActivityIds.map((id) => state.activityMap[id])

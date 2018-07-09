@@ -60,7 +60,6 @@ export function app(state, actions, view, container) {
       newNode,
     )
     globalOldNode = newNode
-    console.log('global old node updated:', globalOldNode)
     // clear all live cycle events (mostly oncreate events)
     // but without differing, lifecycle would just triggered every update.
     while (lifeCycleEvents.length) lifeCycleEvents.pop()()
@@ -111,7 +110,7 @@ export function app(state, actions, view, container) {
         newRootElement = parentElement.insertBefore(newElement, rootElement)
       }
 
-      if (rootElement != null) {
+      if (rootElement != null && newNode) {
         removeElement(parentElement, rootElement, oldNode)
       }
       return newRootElement
@@ -146,21 +145,18 @@ export function app(state, actions, view, container) {
         }
       })
 
-      // TODO: some nodes not deleted
-      debugger
       // we remove the child we don't use.
       oldChildren.map((child, index) => {
         const key = getKey(child)
-        if (key != null && !oldKeyedChildrenMap[key].using) {
+        if (
+          (key != null && !oldKeyedChildrenMap[key].using) ||
+          (key == null && typeof child !== 'string' && typeof child !== 'number')
+        ) {
           if (oldChildrenElements[index]) {
             removeElement(rootElement, oldChildrenElements[index], child)
-            oldChildrenElements[index].deleted = true
-            oldChildren[index].deleted = true
           }
         }
       })
-      oldChildrenElements = oldChildrenElements.filter((c) => c && !c.deleted)
-      oldChildren = oldChildren.filter((c) => c && !c.deleted)
 
       // we iterate through new children, insert or update.
       let nextReuseNodeIndex = newChildren.findIndex(
