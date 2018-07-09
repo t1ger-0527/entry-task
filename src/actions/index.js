@@ -17,9 +17,13 @@ export default {
   },
   searchActivitiesSuccess: (activities, mode = 'append') => (state) => {
     return {
+      searchingActivities: false,
       searchActivityIds: mergeIds(state.searchActivityIds, activities, mode),
     }
   },
+  startSearchActivities: () => (state) => ({
+    searchingActivities: true,
+  }),
   fetchSelf,
   fetchSelfOnce,
 }

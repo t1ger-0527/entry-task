@@ -28,6 +28,7 @@
   ],
   "dependencies": {
     "autoprefixer": "^8.6.5",
+    "date-fns": "^1.29.0",
     "marked": "^0.4.0",
     "mousetrap": "^1.6.2",
     "once": "^1.4.0",

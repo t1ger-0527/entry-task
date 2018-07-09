@@ -5,4 +5,5 @@ export default {
   activityMap: {},
   searchActivityIds: [],
   self: {},
+  searchingActivities: false,
 }

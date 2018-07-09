@@ -69,7 +69,7 @@ const activity = genWithSaving(activityMap, (o) =>
     {
       id: id('activity'),
       channels: sample(channels, flip(0.8) ? 1 : 2),
-      title: faker.lorem.sentence(),
+      title: times(faker.lorem.lines, 2).join(''),
       starter: sample(users)[0],
       publishTime: flip() ? faker.date.past() : faker.date.recent(),
       detail: {

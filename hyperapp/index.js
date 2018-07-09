@@ -10,10 +10,10 @@ import shallowEqual from 'shallow-equal/objects'
 
 // Create and return a new Element
 export function h(name, attributes = {}, children, ...otherChildren) {
-  if (typeof name === 'function') return name(attributes, children)
   children = Array.isArray(children)
     ? children.concat(otherChildren)
     : [children].concat(otherChildren)
+  if (typeof name === 'function') return name(attributes, children)
   return {
     nodeName: name,
     attributes,
