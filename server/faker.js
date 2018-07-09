@@ -14,7 +14,7 @@ const genWithSaving = (map, gen) => (obj) => {
     map[data.id] = data
     return data
   }
-  if (obj.id) {
+  if (obj && obj.id) {
     const saved = map[obj.id]
     return saved || genImpl()
   } else {
@@ -94,4 +94,5 @@ module.exports = {
   times,
   activity,
   channel,
+  user,
 }

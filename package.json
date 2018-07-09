@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:server": "nodemon ./server/index.js",
-    "dev:client": "NODE_ENV=development parcel src/index.html",
+    "dev:client": "NODE_ENV=development parcel src/index.html --no-hmr",
     "dev": "npm run dev:server | npm run dev:client",
     "dev:clean": "rm -rf dist/ .cache/ && npm run dev",
     "precommit": "node ./node_modules/.bin/prettier ./src/**.js --write",

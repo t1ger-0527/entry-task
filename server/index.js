@@ -1,15 +1,16 @@
 const express = require('express')
-const { activity, times } = require('./faker')
+const { activity, times, user } = require('./faker')
 
 const app = express()
 
 app.use((req, res, next) => {
   const requestOrigin = req.headers.origin
-  const method = req.method && req.method.toUpperCase && req.method.toUpperCase();
   const allowedHeaders = req.headers['access-control-request-headers'] || ''
 
   res.setHeader('Access-Control-Allow-Origin', requestOrigin)
-  res.setHeader('Access-Control-Request-Headers', allowedHeaders)
+  if (allowedHeaders) {
+    res.setHeader('Access-Control-Request-Headers', allowedHeaders)
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT')
   next()
 })
@@ -30,6 +31,11 @@ app.get('/activities', (req, res) => {
 
 app.get('/activities/:id', (req, res) => {
   res.send(activity({id: req.params.id}))
+})
+
+app.get('/me', (req, res) => {
+  // TODO: impl the login.
+  res.send(user({id: 'me'}))
 })
 
 app.listen(2333)

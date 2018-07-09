@@ -1,5 +1,12 @@
+import once from 'once'
 import { merge, mergeIds } from '../helpers/state'
 import { location } from '../../router'
+
+const fetchSelf = () => () => fetch('http://localhost:2333/me')
+  .then((res) => res.json())
+  .then((self) => ({self}))
+  .catch(() => ({self: null}))
+const fetchSelfOnce = once(fetchSelf)
 
 export default {
   location: location.actions,
@@ -13,4 +20,6 @@ export default {
       searchActivityIds: mergeIds(state.searchActivityIds, activities, mode),
     }
   },
+  fetchSelf,
+  fetchSelfOnce,
 }

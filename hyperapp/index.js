@@ -39,7 +39,7 @@ export function app(state, actions, view, container) {
   let globalRootElement = null
   let globalOldNode = null
   let renderScheduled = false
-  let isRecycling = true
+  let firstRender = true
   // plain action functions should be wired,
   // so that actions will trigger state change and re-render.
   const wiredActions = wireStateToActions([], globalState, { ...actions })
@@ -52,7 +52,7 @@ export function app(state, actions, view, container) {
   // script ends here, below are function definitions.
 
   function render() {
-    renderScheduled = false
+    renderScheduled = !renderScheduled
     const newNode = resolveNode(view)
     globalRootElement = renderChunk(
       container,
@@ -61,7 +61,7 @@ export function app(state, actions, view, container) {
       newNode,
     )
     globalOldNode = newNode
-    isRecycling = false
+    firstRender = false
     // clear all live cycle events (mostly oncreate events)
     // but without differing, lifecycle would just triggered every update.
     while (lifeCycleEvents.length) lifeCycleEvents.pop()()
@@ -76,6 +76,7 @@ export function app(state, actions, view, container) {
         : ''
   }
 
+  // DEV: first working version of chunk rendering.
   function renderChunk2(parentElement, rootElement, oldNode, newNode) {
     // no reuse
     const newElement = createElement(newNode)
@@ -207,7 +208,7 @@ export function app(state, actions, view, container) {
         //   continue
         // }
 
-        if (newKey == null || isRecycling) {
+        if (newKey == null || firstRender) {
           if (oldKey == null) {
             // both have no key, try to reuse the old element.
             renderChunk(rootElement, oldChildElement, oldChild, newChild, isSvg)
@@ -304,7 +305,7 @@ export function app(state, actions, view, container) {
 
       // trigger destroy immediately, but trigger create with a stack
       if (attributes.ondestroy) {
-        attributes.ondestroy(element)
+        attributes.ondestroy(element, wiredActions)
       }
     }
     return element
@@ -325,7 +326,7 @@ export function app(state, actions, view, container) {
     if (attributes) {
       if (attributes.oncreate) {
         // produce oncreate events
-        lifeCycleEvents.push(() => attributes.oncreate(element))
+        lifeCycleEvents.push(() => attributes.oncreate(element, wiredActions))
       }
 
       Object.keys(attributes).map((key) =>
@@ -378,6 +379,7 @@ export function app(state, actions, view, container) {
 
   // update a element's attributes. with binding all the event listeners.
   function updateAttribute(element, name, value, oldValue) {
+    if (name === 'className') name = 'class'
     if (name === 'key') {
     } else if (name === 'style') {
       Object.assign(element.style, value)
@@ -423,7 +425,8 @@ export function app(state, actions, view, container) {
           }
 
           function updateStateImpl(newState) {
-            if (newState !== getPartialState(path, globalState)) {
+            state = getPartialState(path, globalState)
+            if (newState !== state) {
               globalState = setPartialState(
                 path,
                 { ...state, ...newState },
