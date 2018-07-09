@@ -20,7 +20,6 @@ export default () => (state, actions) => {
   return (
     <div
       key="index"
-      class="Index-root"
       oncreate={(e) => handleIndexPageCreate(e, actions, state)}
     >
       {activities.map((activity) => (

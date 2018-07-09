@@ -22,10 +22,17 @@
     "url": "https://github.com/t1ger-0527/entry-task/issues"
   },
   "homepage": "https://github.com/t1ger-0527/entry-task#readme",
+  "browserslist": [
+    "> 1%",
+    "last 2 version"
+  ],
   "dependencies": {
+    "autoprefixer": "^8.6.5",
     "marked": "^0.4.0",
     "mousetrap": "^1.6.2",
     "once": "^1.4.0",
+    "postcss-modules": "^1.1.0",
+    "postcss-preset-env": "^5.2.1",
     "shallow-equal": "^1.0.0",
     "state": "^0.2.0",
     "whatwg-fetch": "^2.0.4"

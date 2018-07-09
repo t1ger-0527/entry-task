@@ -1,1 +1,21 @@
+:root {
+  --primary: #8560A9;
+  --primary-neutral: #67616D;
+  --primary-light: #D3C1E5;
+  --primary-dark: #453257;
+  --background: #FAF9FC;
+  --complement: #D5EF7F;
+  --complement-dark: #AECB4F;
+  --complement-dark-2: #788C36;
+  --complement-light: #E5F7A9;
+  --gap: 16px;
+}
 
+html {
+  font-size: 14px;
+}
+
+:global(#root) {
+  max-width: 600px;
+  margin: auto;
+}

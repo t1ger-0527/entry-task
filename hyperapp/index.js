@@ -39,6 +39,7 @@ export function app(state, actions, view, container) {
   let globalRootElement = null
   let globalOldNode = null
   let renderScheduled = false
+  let isRecycling = true
   // plain action functions should be wired,
   // so that actions will trigger state change and re-render.
   const wiredActions = wireStateToActions([], globalState, { ...actions })
@@ -60,17 +61,19 @@ export function app(state, actions, view, container) {
       newNode,
     )
     globalOldNode = newNode
+    isRecycling = false
     // clear all live cycle events (mostly oncreate events)
     // but without differing, lifecycle would just triggered every update.
     while (lifeCycleEvents.length) lifeCycleEvents.pop()()
   }
 
+  // resolve empty text node for null node.
   function resolveNode(node) {
     return typeof node === 'function'
       ? resolveNode(node(globalState, wiredActions))
       : node != null
         ? node
-        : null
+        : ''
   }
 
   function renderChunk2(parentElement, rootElement, oldNode, newNode) {
@@ -84,136 +87,187 @@ export function app(state, actions, view, container) {
 
     return newRootElement
   }
+
+  function canReuse(oldNode, newNode) {
+    return oldNode != null && oldNode.nodeName === newNode.nodeName
+  }
+
   /**
    * differing
    * @param parentElement, the container you want newNode to be in.
    * @param rootElement, the element that previously rendered by newNode
    * @param oldNode, the previous version of v-node
    * @param newNode, the version of v-node you want to render
+   * @param isSvg
    * @returns {*}
    */
-  function renderChunk(parentElement, rootElement, oldNode, newNode) {
-    if (oldNode === newNode) {
-      // do nothing
-    } else if (oldNode && oldNode.nodeName == null) {
-      parentElement.nodeValue = newNode
-    } else if (
-      oldNode == null ||
-      rootElement == null ||
-      newNode == null ||
-      oldNode.nodeName !== newNode.nodeName
-    ) {
-      // no reuse when the nodeName is different
-      const newElement = createElement(newNode)
-      let newRootElement
-      if (newElement != null) {
-        newRootElement = parentElement.insertBefore(newElement, rootElement)
-      }
+  function renderChunk(parentElement, rootElement, oldNode, newNode, isSvg) {
+    /**
+     * There are three cases when chunk rendering:
+     *   - same v-node (for text, number and empty node.)
+     *   - can't re-use, create new element, insert and remove the old one (if there is).
+     *   - simple replacement of nodeValue (for text, number and empty node.)
+     *   - reuse, update element and align children. continume call re-render on children.
+     */
+    if (newNode === oldNode) {
+      // the node is same, do nothing.
+    } else if (!canReuse(oldNode, newNode)) {
+      // when nodeName is different, or is new node, just create.
+      const newElement = createElement(newNode, isSvg)
+      parentElement.insertBefore(newElement, rootElement)
 
-      if (rootElement != null && newNode) {
+      if (oldNode != null) {
+        // if is replacement, remove the old one.
         removeElement(parentElement, rootElement, oldNode)
+      } else {
+        // pure insertion, nothing else happened.
       }
-      return newRootElement
+
+      return newElement
     } else if (oldNode.nodeName == null) {
-      // text node
       rootElement.nodeValue = newNode
-    } else if (rootElement.childNodes) {
-      // should update element rather than remove and insert.
-      // first update the element's attributes.
-      updateElement(rootElement, oldNode.attributes, newNode.attributes)
-
-      // first we collect nessisary information into a map
-      const newChildren = newNode.children.map(resolveNode)
-      newNode.children = newChildren
-      let oldChildren = oldNode.children
-      let oldChildrenElements = []
-      const oldKeyedChildrenMap = {}
-      oldChildren.map((child, index) => {
-        const key = getKey(child)
-        if (key != null) {
-          oldKeyedChildrenMap[key] = child
-        }
-        oldChildrenElements[index] = rootElement.childNodes[index]
-      })
-
-      // then we mark the element we are going to use.
-      newChildren.map((child) => {
-        const key = getKey(child)
-        // we mark future using childrenMap as
-        if (child && key != null && oldKeyedChildrenMap[key]) {
-          oldKeyedChildrenMap[key].using = true
-        }
-      })
-
-      // we remove the child we don't use.
-      oldChildren.map((child, index) => {
-        const key = getKey(child)
-        if (
-          (key != null && !oldKeyedChildrenMap[key].using) ||
-          (key == null && typeof child !== 'string' && typeof child !== 'number')
-        ) {
-          if (oldChildrenElements[index]) {
-            removeElement(rootElement, oldChildrenElements[index], child)
-          }
-        }
-      })
-
-      // we iterate through new children, insert or update.
-      let nextReuseNodeIndex = newChildren.findIndex(
-        (c) => oldKeyedChildrenMap[getKey(c)],
+    } else {
+      /**
+       * reuse part:
+       *   1. mark all keyed old children, collect the old elements.
+       *   2. iterate all new children, insert new children or perform move & update.
+       *   3. remove all remaining child element that doesn't have key.
+       *   4. remove all unused keyed child element.
+       */
+      // now we perform the reuse:
+      // first, we update this element's attributes.
+      updateElement(
+        rootElement,
+        oldNode.attributes,
+        newNode.attributes,
+        // if parent is svg, then all children is svg.
+        (isSvg = isSvg || newNode.nodeName === 'svg'),
       )
-      let nextReuseElement =
-        oldChildrenElements[
-          oldChildren.findIndex(
-            (c) =>
-              getKey(c) != null &&
-              getKey(c) === getKey(newChildren[nextReuseNodeIndex]),
-          )
-        ]
-      newChildren.map((child, index) => {
-        const key = getKey(child)
-        if (key == null) {
-          // no key, just try to reuse.
-          renderChunk(
-            rootElement,
-            oldChildrenElements[index],
-            oldChildren[index],
-            child,
-          )
-        } else if (!oldKeyedChildrenMap[key]) {
-          // has new key, create
-          if (index < nextReuseNodeIndex) {
-            const emptyElement = createElement({ nodeName: 'unique' })
+
+      // we find out which children we can reuse.
+      const oldKeyed = {}
+      const newKeyed = {}
+      const oldElements = []
+      const oldChildren = oldNode.children
+      const newChildren = newNode.children
+
+      oldChildren.map((child, i) => {
+        oldElements[i] = rootElement.childNodes[i]
+
+        const oldKey = getKey(child)
+        if (oldKey != null) {
+          oldKeyed[oldKey] = [oldElements[i], child]
+        }
+      })
+
+      let oldChildrenPtr = 0
+      let newChildrenPtr = 0
+
+      /**
+       * with one single iteration of new children, we do things below:
+       *   - resolve the new node function to a v-node object, and save it.
+       *   - fast-forward the oldChildrenPtr to a not inserted child.
+       *   - if the new node do not have a key:
+       *     - fast-forward the oldChildrenPtr to a not keyed child
+       *     - now both old and new node do not have key, perform a re-render on those node.
+       *     - NOTE: if all old children have keys and a new child do not,
+       *       it may cause all old children to re-render. (so-called rare performance pitfall)
+       *   - if the new node do have key:
+       *     - if new node and old node key are the same, perform a simple update.
+       *     - else if new node key was in old nodes, move the same key old node before current old node,
+       *       and perform a update on same key node.
+       *     - else perform a simple insertion before current old node.
+       *   - save the key to rendered new node map, and move forward new node pointer.
+       */
+      while (newChildrenPtr < newChildren.length) {
+        // resolve new child first.
+        const newChild = resolveNode(newChildren[newChildrenPtr])
+        newChildren[newChildrenPtr] = newChild
+        const oldChild = oldChildren[oldChildrenPtr]
+        const oldChildElement = oldElements[oldChildrenPtr]
+        const oldKey = getKey(oldChild)
+        const newKey = getKey(newChild)
+
+        // if have re-rendered the old key, move old node ptr forward
+        if (newKeyed[oldKey]) {
+          oldChildrenPtr++
+          continue
+        }
+
+        // FIXME: why do that?
+        // if (
+        //   newKey != null &&
+        //   newKey === getKey(oldChildren[oldChildrenPtr + 1])
+        // ) {
+        //   debugger
+        //   if (oldKey == null) {
+        //     removeElement(rootElement, oldChildElement, oldChild)
+        //   }
+        //   oldChildrenPtr++
+        //   continue
+        // }
+
+        if (newKey == null || isRecycling) {
+          if (oldKey == null) {
+            // both have no key, try to reuse the old element.
+            renderChunk(rootElement, oldChildElement, oldChild, newChild, isSvg)
+            newChildrenPtr++
+          }
+          oldChildrenPtr++
+        } else {
+          const [oldSameKeyedElement, oldSameKeyedNode] = oldKeyed[newKey] || []
+
+          if (oldKey === newKey) {
+            // best case, we perform an simple update with matching element and nodes.
             renderChunk(
               rootElement,
-              rootElement.insertBefore(emptyElement, nextReuseElement),
-              null,
-              child,
+              oldSameKeyedElement,
+              oldSameKeyedNode,
+              newChild,
+              isSvg,
+            )
+            oldChildrenPtr++
+          } else if (oldSameKeyedElement) {
+            // we have a match but not with the right index.
+            // we move the old element to the current index place.
+            const movedSameKeyElement = rootElement.insertBefore(
+              oldSameKeyedElement,
+              oldChildElement,
+            )
+            // and then perform an update on it.
+            renderChunk(
+              rootElement,
+              movedSameKeyElement,
+              oldSameKeyedNode,
+              newChildren[newChildrenPtr],
+              isSvg,
             )
           } else {
-            renderChunk(rootElement, null, oldChildren[index], child)
+            // perform a pure insertion, before oldChildElement.
+            renderChunk(rootElement, oldChildElement, null, newChild, isSvg)
           }
-        } else {
-          // we can reuse, then reuse.
-          nextReuseNodeIndex = newChildren
-            .slice(index + 1)
-            .findIndex((c) => oldKeyedChildrenMap[getKey(c)])
-          nextReuseElement =
-            oldChildrenElements[
-              oldChildren.findIndex(
-                (c) =>
-                  getKey(c) != null &&
-                  getKey(c) === getKey(newChildren[nextReuseNodeIndex]),
-              )
-            ]
-          const oldChild = oldKeyedChildrenMap[key]
-          const oldChildElementIndex = oldChildren.findIndex(
-            (c) => getKey(c) === key,
-          )
-          const oldChildElement = oldChildrenElements[oldChildElementIndex]
-          renderChunk(rootElement, oldChildElement, oldChild, child)
+
+          // update new child ptr with new child produced.
+          newKeyed[newKey] = newChild
+          newChildrenPtr++
         }
-      })
+      }
+
+      // all new nodes are rendered, remove the remaining not keyed old elements from parent.
+      while (oldChildrenPtr < oldChildren.length) {
+        const oldChild = oldChildren[oldChildrenPtr]
+        if (getKey(oldChild) == null) {
+          removeElement(rootElement, oldElements[oldChildrenPtr], oldChild)
+        }
+        oldChildrenPtr++
+      }
+
+      // also remove the not rendered old elements
+      for (let i in oldKeyed) {
+        if (!newKeyed[i]) {
+          removeElement(rootElement, oldKeyed[i][0], oldKeyed[i][1])
+        }
+      }
     }
     return rootElement
   }
@@ -224,7 +278,7 @@ export function app(state, actions, view, container) {
 
   function removeElement(parent, element, node) {
     function removeImpl() {
-      if (node) {
+      if (element && node) {
         element = removeChildren(element, node)
       }
       parent.removeChild(element)
@@ -257,7 +311,6 @@ export function app(state, actions, view, container) {
   }
 
   function createElement(node, isSvg) {
-    if (node == null) return node
     const { attributes, nodeName, children } = node
     isSvg = isSvg || nodeName === 'svg'
     let element
