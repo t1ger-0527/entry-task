@@ -47,11 +47,11 @@ const handleSpinnerDestroy = () => {
 }
 
 export default () => (state, actions) => {
-  const activities = state.searchActivityIds.map((id) => state.activityMap[id])
+  const activityIds = state.searchActivityIds
   return (
     <div key="index" oncreate={(e) => handleIndexPageCreate(e, actions, state)}>
-      {activities.map((activity) => (
-        <ActivityCard key={activity.id} activity={activity} />
+      {activityIds.map((id) => (
+        <ActivityCard key={id} activityId={id} />
       ))}
       <div
         oncreate={(e) => handleSpinnerCreate(e, actions, state)}

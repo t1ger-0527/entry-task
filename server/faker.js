@@ -1,5 +1,5 @@
 const faker = require('faker')
-const id = (name) => name + faker.random.uuid()
+const id = (name) => name + '-' + faker.random.uuid()
 const flip = (prob = 0.5) => Math.random() < prob
 const times = (fn, time) => Array.from(Array(time)).map((_, i) => fn(i))
 const sample = (arr, length = 1) => faker.helpers.shuffle(arr).slice(0, length)
@@ -82,8 +82,8 @@ const activity = genWithSaving(activityMap, (o) =>
         returnTime: faker.date.future(1),
         embedMapUrl: sample(embedMapUrls)[0],
       },
-      me_going: flip(),
-      me_liking: flip(),
+      meGoing: flip(),
+      meLiking: flip(),
       going: sample(users, sample(times((i) => i + 3, 30))[0]),
       liked: sample(users, sample(times((i) => i + 3, 20))[0]),
       replies: times(comment, sample(times((i) => i + 3, 10))[0]),

@@ -8,6 +8,8 @@
   --complement-dark: #AECB4F;
   --complement-dark-2: #788C36;
   --complement-light: #E5F7A9;
+  --disabled-background: #BABABA;
+  --disabled-text: #666;
   --gap: 16px;
   --nav-height: 40px;
 }

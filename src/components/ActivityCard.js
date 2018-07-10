@@ -11,12 +11,26 @@ import { toTimeText } from '../lib/date'
 import truncate from '../lib/truncate'
 import styles from './ActivityCard.css'
 
-export default ({ activity, key }) => {
+function handleActionButtonClick(activity, actionName, actions, event) {
+  event.preventDefault()
+  console.log('trigger button click')
+  fetch(`http://localhost:2333/activities/${activity.id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ [actionName]: !activity[actionName] }),
+  }).then(
+    actions.updateActivities({
+      id: activity.id,
+      [actionName]: !activity[actionName],
+    }),
+  )
+}
+
+export default ({ activityId, key }) => (state, actions) => {
+  const activity = state.activityMap[activityId]
   const { starter, channels, detail, title } = activity
   const leavingTimeText = toTimeText(detail.leavingTime)
   const returnTimeText = toTimeText(detail.returnTime)
 
-  // TODO: left out here at the like button.
   return (
     <Link to={`/activities/${activity.id}`} className={styles.root} key={key}>
       <div key="head" className={styles.head}>
@@ -49,30 +63,42 @@ export default ({ activity, key }) => {
       </div>
       <div className={styles.actions}>
         <button
+          onclick={handleActionButtonClick.bind(
+            null,
+            activity,
+            'meGoing',
+            actions,
+          )}
           className={cx(styles.actionButton, styles.goingButton, {
-            [styles.activeButton]: activity.me_going,
+            [styles.activeButton]: activity.meGoing,
           })}
         >
           <Icon
             className={styles.actionIcon}
             size={10}
-            src={activity.me_going ? checkIcon : checkIconOutline}
+            src={activity.meGoing ? checkIcon : checkIconOutline}
             topOffset={-1}
           />
-          {activity.me_going ? 'I am going!' : `${activity.going.length} Going`}
+          {activity.meGoing ? 'I am going!' : `${activity.going.length} Going`}
         </button>
         <button
+          onclick={handleActionButtonClick.bind(
+            null,
+            activity,
+            'meLiking',
+            actions,
+          )}
           className={cx(styles.actionButton, styles.likeButton, {
-            [styles.activeButton]: activity.me_liking,
+            [styles.activeButton]: activity.meLiking,
           })}
         >
           <Icon
             className={styles.actionIcon}
             size={10}
-            src={activity.me_liking ? heartIcon : heartIconOutline}
+            src={activity.meLiking ? heartIcon : heartIconOutline}
             topOffset={-1}
           />
-          {activity.me_liking ? 'I like it!' : `${activity.liked.length} Likes`}
+          {activity.meLiking ? 'I like it!' : `${activity.liked.length} Likes`}
         </button>
       </div>
     </Link>

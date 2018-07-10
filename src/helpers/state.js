@@ -5,7 +5,7 @@ export const merge = (map, items) => {
   const cloneMap = {
     ...map,
   }
-  items.map(item => cloneMap[item.id] = item)
+  items.map(item => cloneMap[item.id] = {...cloneMap[item.id], ...item})
   return cloneMap
 }
 

@@ -1,4 +1,5 @@
 const express = require('express')
+const bodyParser = require('body-parser')
 const { activity, times, user } = require('./faker')
 
 const app = express()
@@ -14,6 +15,8 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT')
   next()
 })
+
+app.use(bodyParser.json())
 
 app.get('/', (req, res) => {
   res.send('healthy')
@@ -31,6 +34,12 @@ app.get('/activities', (req, res) => {
 
 app.get('/activities/:id', (req, res) => {
   res.send(activity({id: req.params.id}))
+})
+
+app.put('/activities/:id', (req, res) => {
+  const theActivity = activity({id: req.params.id})
+  Object.assign(theActivity, req.body)
+  res.send(theActivity)
 })
 
 app.get('/me', (req, res) => {
