@@ -55,7 +55,7 @@ const comment = genWithSaving(commentMap, (o) =>
   Object.assign(
     {
       id: id('comment'),
-      created: faker.date.recent(),
+      created: new Date(faker.date.recent()).getTime(),
       author: sample(users)[0],
       content: faker.lorem.lines(2),
       replying: flip(0.2) ? sample(users)[0] : null,
@@ -91,7 +91,7 @@ const activity = genWithSaving(activityMap, (o) =>
       meLiking: false,
       going: sample(users, sample(times((i) => i + 3, 30))[0]),
       liked: sample(users, sample(times((i) => i + 3, 20))[0]),
-      replies: times(comment, sample(times((i) => i + 3, 10))[0]),
+      comments: times(comment, sample(times((i) => i + 3, 10))[0]),
     },
     o,
   )

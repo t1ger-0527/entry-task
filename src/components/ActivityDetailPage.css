@@ -271,3 +271,60 @@
   border-radius: 12px;
   overflow: hidden;
 }
+
+.commentSection {
+  padding: 24px var(--gap) var(--gap);
+}
+
+.commentItem {
+  display: flex;
+}
+
+.commentItem + .commentItem {
+  margin-top: var(--gap);
+}
+
+.commentAuthorAvatar {
+  flex-shrink: 0;
+  flex-grow: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.commentContentContainer {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.commentContent {
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--primary-neutral);
+}
+
+.replyButton {
+  flex-shrink: 0;
+  flex-grow: 0;
+  position: relative;
+  padding: 0 0 0 8px;
+  width: 24px;
+}
+
+.replyIcon {
+  position: absolute;
+  left: 8px;
+  top: 0;
+}
+
+.commentAuthor {
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--primary);
+}
+
+.commentCreateTime {
+  margin-left: 12px;
+  font-size: 10px;
+  color: #bababa;
+}

@@ -1,5 +1,5 @@
 import cx from 'classnames'
-import {format} from 'date-fns'
+import { format, distanceInWordsStrict } from 'date-fns'
 import { h } from '../../framework'
 import Spinner from './Spinner'
 import { Link } from '../../router'
@@ -9,6 +9,7 @@ import commentIcon from '../icons/comment.svg'
 import infoIconOutline from '../icons/info-outline.svg'
 import peopleIconOutline from '../icons/people-outline.svg'
 import commentIconOutline from '../icons/comment-outline.svg'
+import replyIcon from '../icons/reply.svg'
 import fromIcon from '../icons/date-from.svg'
 import toIcon from '../icons/date-to.svg'
 import ChannelItem from './ChannelItem'
@@ -16,6 +17,7 @@ import Icon from './Icon'
 import styles from './ActivityDetailPage.css'
 
 const handlePageCreate = (id, actions) => {
+  document.scrollingElement.scroll({ top: 0 })
   fetch(`http://localhost:2333/activities/${id}`)
     .then((res) => res.json())
     .then((activity) => {
@@ -44,17 +46,53 @@ const NavItem = ({ index, iconSrc, text }) => (state) => {
   )
 }
 
-const TimeDisplay = ({timestamp, iconSrc}) => {
+const TimeDisplay = ({ timestamp, iconSrc }) => {
   return (
     <div className={styles.timeDisplay}>
       <div className={styles.dateLine}>
-        <Icon class={styles.dateIcon} src={iconSrc} width={14} height={16} topOffset={-3} />
+        <Icon
+          class={styles.dateIcon}
+          src={iconSrc}
+          width={14}
+          height={16}
+          topOffset={-3}
+        />
         {format(timestamp, 'DD MMMM YYYY')}
       </div>
       <div className={styles.timeLine}>
         {format(timestamp, 'h:mm')}
         <span className={styles.suffix}>{format(timestamp, 'a')}</span>
       </div>
+    </div>
+  )
+}
+
+const CommentItem = ({ comment, activity }) => {
+  const { author } = comment
+  return (
+    <div className={styles.commentItem}>
+      <img
+        className={styles.commentAuthorAvatar}
+        src={author.avatarUrl}
+        alt="comment author avatar"
+      />
+      <div className={styles.commentContentContainer}>
+        <div className={styles.commentAuthor}>
+          {comment.author.name}
+          <span className={styles.commentCreateTime}>
+            {distanceInWordsStrict(Date.now(), comment.created)} ago
+          </span>
+        </div>
+        <div className={styles.commentContent}>{comment.content}</div>
+      </div>
+      <button className={styles.replyButton}>
+        <Icon
+          className={styles.replyIcon}
+          src={replyIcon}
+          width={16}
+          height={13}
+        />
+      </button>
     </div>
   )
 }
@@ -78,11 +116,24 @@ export default ({ params }) => (state, actions) => {
       title,
       channels,
       starter,
-      detail: { images, description, leavingTime, returnTime, address, embedMapUrl },
+      comments,
+      detail: {
+        images,
+        description,
+        leavingTime,
+        returnTime,
+        address,
+        embedMapUrl,
+      },
     } = activity
 
     return (
-      <div className={styles.root} key="detail" ondestroy={handlePageDestroy}>
+      <div
+        className={styles.root}
+        key="detail"
+        oncreate={() => handlePageCreate(activityId, actions)}
+        ondestroy={handlePageDestroy}
+      >
         <header className={styles.header}>
           <div className={styles.channels}>
             {channels.map((c) => <ChannelItem channel={c} key={c.id} />)}
@@ -158,16 +209,27 @@ export default ({ params }) => (state, actions) => {
           <div className={styles.detailSection}>
             <div className={styles.sectionTitle}>Where</div>
             <address>
-              <div className={styles.addressFirstLine}>
-                {address.firstLine}
-              </div>
+              <div className={styles.addressFirstLine}>{address.firstLine}</div>
               <div className={styles.addressSecondLine}>
                 {address.secondLine}
               </div>
             </address>
             <div className={styles.mapContainer}>
-              <iframe className={styles.map} src={embedMapUrl} frameborder="0"></iframe>
+              <iframe
+                className={styles.map}
+                src={embedMapUrl}
+                frameborder="0"
+              />
             </div>
+          </div>
+          <div className={styles.commentSection}>
+            {comments.map((comment) => (
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                activity={activity}
+              />
+            ))}
           </div>
         </section>
       </div>
