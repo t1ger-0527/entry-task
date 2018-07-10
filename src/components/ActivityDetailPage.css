@@ -1,4 +1,5 @@
 .root {
+  min-height: 100vh;
 }
 
 .header {
@@ -55,8 +56,12 @@
 }
 
 .nav {
+  z-index: 1;
+  position: sticky;
+  top: var(--nav-height);
   display: flex;
   border-bottom: var(--border);
+  background-color: #faf9fc;
 }
 
 /**
@@ -176,11 +181,12 @@
 
 .marginPlaceholder {
   height: var(--gap);
+  margin-left: var(--gap);
   border-bottom: var(--border);
 }
 
-.time {
-  padding: var(--gap) 0;
+.detailSection {
+  padding-top: var(--gap);
   margin: 0 var(--gap);
 }
 
@@ -201,4 +207,67 @@
   width: 4px;
   background-color: var(--primary);
   margin-left: -8px;
+}
+
+.timeDisplay {
+  flex-shrink: 0;
+  flex-grow: 0;
+  width: 50%;
+  text-align: center;
+}
+
+.timeDisplay + .timeDisplay {
+  border-left: var(--border);
+}
+
+.timeDisplaySection {
+  position: relative;
+  display: flex;
+}
+
+.dateLine {
+  margin-top: var(--gap);
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--primary-neutral);
+}
+
+.dateIcon {
+  margin-right: 4px;
+}
+
+.timeLine {
+  color: var(--complement-dark);
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 300;
+}
+
+.suffix {
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.addressFirstLine,
+.addressSecondLine {
+  color: var(--primary-neutral);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.addressFirstLine {
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.mapContainer,
+.map {
+  width: 100%;
+  height: 88px;
+}
+
+.mapContainer {
+  margin-top: 8px;
+  border-radius: 12px;
+  overflow: hidden;
 }

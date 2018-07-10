@@ -82,6 +82,10 @@ const activity = genWithSaving(activityMap, (o) =>
         leavingTime: faker.date.future(),
         returnTime: faker.date.future(1),
         embedMapUrl: sample(embedMapUrls)[0],
+        address: {
+          firstLine: faker.address.streetName(3),
+          secondLine: faker.address.secondaryAddress(2) + ' S1234151',
+        },
       },
       meGoing: false,
       meLiking: false,

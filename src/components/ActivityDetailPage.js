@@ -1,4 +1,5 @@
 import cx from 'classnames'
+import {format} from 'date-fns'
 import { h } from '../../framework'
 import Spinner from './Spinner'
 import { Link } from '../../router'
@@ -8,6 +9,8 @@ import commentIcon from '../icons/comment.svg'
 import infoIconOutline from '../icons/info-outline.svg'
 import peopleIconOutline from '../icons/people-outline.svg'
 import commentIconOutline from '../icons/comment-outline.svg'
+import fromIcon from '../icons/date-from.svg'
+import toIcon from '../icons/date-to.svg'
 import ChannelItem from './ChannelItem'
 import Icon from './Icon'
 import styles from './ActivityDetailPage.css'
@@ -41,10 +44,17 @@ const NavItem = ({ index, iconSrc, text }) => (state) => {
   )
 }
 
-const TimeDisplay = ({timestamp}) => {
+const TimeDisplay = ({timestamp, iconSrc}) => {
   return (
     <div className={styles.timeDisplay}>
-
+      <div className={styles.dateLine}>
+        <Icon class={styles.dateIcon} src={iconSrc} width={14} height={16} topOffset={-3} />
+        {format(timestamp, 'DD MMMM YYYY')}
+      </div>
+      <div className={styles.timeLine}>
+        {format(timestamp, 'h:mm')}
+        <span className={styles.suffix}>{format(timestamp, 'a')}</span>
+      </div>
     </div>
   )
 }
@@ -68,7 +78,7 @@ export default ({ params }) => (state, actions) => {
       title,
       channels,
       starter,
-      detail: { images, description },
+      detail: { images, description, leavingTime, returnTime, address, embedMapUrl },
     } = activity
 
     return (
@@ -137,9 +147,27 @@ export default ({ params }) => (state, actions) => {
             )}
           </div>
           <div className={styles.marginPlaceholder} />
-          <div className={styles.time}>
+          <div className={styles.detailSection}>
             <div className={styles.sectionTitle}>When</div>
-
+            <div className={styles.timeDisplaySection}>
+              <TimeDisplay timestamp={leavingTime} iconSrc={fromIcon} />
+              <TimeDisplay timestamp={returnTime} iconSrc={toIcon} />
+            </div>
+          </div>
+          <div className={styles.marginPlaceholder} />
+          <div className={styles.detailSection}>
+            <div className={styles.sectionTitle}>Where</div>
+            <address>
+              <div className={styles.addressFirstLine}>
+                {address.firstLine}
+              </div>
+              <div className={styles.addressSecondLine}>
+                {address.secondLine}
+              </div>
+            </address>
+            <div className={styles.mapContainer}>
+              <iframe className={styles.map} src={embedMapUrl} frameborder="0"></iframe>
+            </div>
           </div>
         </section>
       </div>
