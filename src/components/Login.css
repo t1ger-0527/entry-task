@@ -1,0 +1,117 @@
+.root {
+  position: absolute;
+  width: calc(100vw);
+  height: calc(100% + 0px);
+  max-width: 600px;
+  margin: auto;
+  background-image: url('../images/login-background.jpg');
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: auto calc(100% - 64px);
+  text-align: center;
+}
+
+.mask {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(133,96,169, .7), #8560A9);
+  opacity: .95;
+}
+
+.slogan {
+  margin-top: 70px;
+  line-height: 20px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--complement);
+}
+
+.content {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.title {
+  font-size: 24px;
+  line-height: 31px;
+  font-weight: 600;
+  color: var(--complement);
+  margin-top: var(--gap);
+}
+
+.logoContainer {
+  width: 64px;
+  height: 64px;
+  padding: 6px;
+  margin-top: 37px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid var(--complement);
+  border-radius: 50%;
+}
+
+.form {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.button {
+  display: block;
+  width: 100%;
+  line-height: 64px;
+  height: 64px;
+  font-size: 16px;
+  color: var(--primary-neutral);
+  font-weight: 600;
+  background: var(--complement);
+}
+
+.input {
+  width: 100%;
+  padding: 10px 34px;
+  border-radius: 20px;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--primary-dark);
+  border: 1px solid var(--primary-light);
+}
+
+.input:focus {
+  background-color: rgba(255, 255, 255, .2);
+}
+
+.input::placeholder {
+  font-size: 16px;
+  line-height: 20px;
+  color: #AC8EC9;
+}
+
+.inputContainer {
+  width: calc(100% - 40px);
+  max-width: 250px;
+  margin: auto;
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.passwordInputContainer {
+  margin-bottom: 55px;
+}
+
+.accountInputContainer {
+  margin-bottom: 16px;
+}

@@ -25,13 +25,17 @@ body {
 }
 
 /**
- * Correct the font size and margin on `h1` elements within `section` and
+ * Correct the font size and set margin to 0 on `h1` elements within `section` and
  * `article` contexts in Chrome, Firefox, and Safari.
  */
 
 h1 {
   font-size: 2em;
-  margin: 0.67em 0;
+  margin: 0;
+}
+
+h2 {
+  margin: 0;
 }
 
 /* Grouping content
@@ -342,6 +346,18 @@ template {
   display: none;
 }
 
+/**
+ * Everything is border-box.
+ */
 * {
   box-sizing: border-box;
+}
+
+/**
+ * Reset appearance on input.
+ */
+input {
+  -webkit-appearance: none;
+  border: 0;
+  background: transparent;
 }

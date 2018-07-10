@@ -1,20 +1,30 @@
 import { h } from '../framework'
-import { Route } from '../router'
-import Index from './components/Index'
-import ActivityDetail from './components/ActivityDetail'
+import Routes from './Routes'
 import TopNav from './components/TopNav'
+import Login from './components/Login'
 import styles from './App.css'
 
+let fetching = true
+
 function handleAppCreate(element, actions) {
-  actions.fetchSelfOnce()
+  actions.fetchSelfOnce().then(() => (fetching = false))
 }
 
+const App = () => (
+  <div className={styles.root}>
+    <TopNav />
+    <Routes />
+  </div>
+)
+
 export default (state, actions) => {
-  return (
-    <div className={styles.root} oncreate={handleAppCreate}>
-      <TopNav />
-      <Route path="/" render={Index} />
-      <Route path="/activities/:activityId" render={ActivityDetail} />
-    </div>
-  )
+  let content
+  if (fetching) {
+    content = null
+  } else if (state.self) {
+    content = <App />
+  } else {
+    content = <Login />
+  }
+  return <div oncreate={handleAppCreate}>{content}</div>
 }

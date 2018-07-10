@@ -1,5 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 const { activity, times, user } = require('./faker')
 
 const app = express()
@@ -10,13 +11,15 @@ app.use((req, res, next) => {
 
   res.setHeader('Access-Control-Allow-Origin', requestOrigin)
   if (allowedHeaders) {
-    res.setHeader('Access-Control-Request-Headers', allowedHeaders)
+    res.setHeader('Access-Control-Allow-Headers', allowedHeaders)
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
   next()
 })
 
 app.use(bodyParser.json())
+app.use(cookieParser())
 
 app.get('/', (req, res) => {
   res.send('healthy')
@@ -44,7 +47,18 @@ app.put('/activities/:id', (req, res) => {
 
 app.get('/me', (req, res) => {
   // TODO: impl the login.
-  res.send(user({id: 'me'}))
+  if (!req.cookies['_e']) {
+    res.sendStatus(401)
+  } else {
+    res.send(user({id: req.cookies['_e']}))
+  }
+})
+
+app.post('/login', (req, res) => {
+  const {email} = req.body
+  const userName = email.split('@')[0]
+  res.cookie('_e', userName, {maxAge: 900000})
+  res.sendStatus(200)
 })
 
 app.listen(2333)

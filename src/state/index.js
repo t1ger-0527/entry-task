@@ -4,6 +4,6 @@ export default {
   location: location.state,
   activityMap: {},
   searchActivityIds: [],
-  self: {},
+  self: null,
   searchingActivities: false,
 }
