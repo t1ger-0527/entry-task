@@ -1,4 +1,4 @@
-import {h} from '../../hyperapp'
+import {h} from '../../framework'
 import Icon from './Icon'
 import logoCat from '../icons/logo-cat.svg'
 import search from '../icons/search.svg'

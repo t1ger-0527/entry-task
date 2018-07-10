@@ -195,7 +195,7 @@ export function app(state, actions, view, container) {
           continue
         }
 
-        // FIXME: why do that?
+        // FIXME
         // if (
         //   newKey != null &&
         //   newKey === getKey(oldChildren[oldChildrenPtr + 1])
@@ -287,7 +287,7 @@ export function app(state, actions, view, container) {
 
     const { attributes } = node || {}
     if (attributes && attributes.onremove) {
-      // onremove is a special event in hyperapp.
+      // onremove is a special event in framework.
       // It is usually used for animation.
       // you animate, and then call the callback to actually remove it.
       attributes.onremove(element, removeImpl)

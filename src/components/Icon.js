@@ -1,4 +1,4 @@
-import { h } from '../../hyperapp'
+import { h } from '../../framework'
 
 export default ({ size, width, height, topOffset = 0, ...props }) => {
   width = width || size

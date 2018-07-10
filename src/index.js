@@ -1,5 +1,5 @@
 import 'whatwg-fetch'
-import { app, h } from '../hyperapp'
+import { app, h } from '../framework'
 import actions from './actions'
 import state from './state'
 import App from './App'

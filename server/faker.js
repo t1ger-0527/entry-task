@@ -82,6 +82,8 @@ const activity = genWithSaving(activityMap, (o) =>
         returnTime: faker.date.future(1),
         embedMapUrl: sample(embedMapUrls)[0],
       },
+      me_going: flip(),
+      me_liking: flip(),
       going: sample(users, sample(times((i) => i + 3, 30))[0]),
       liked: sample(users, sample(times((i) => i + 3, 20))[0]),
       replies: times(comment, sample(times((i) => i + 3, 10))[0]),

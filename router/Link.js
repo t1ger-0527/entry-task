@@ -1,4 +1,4 @@
-import {h} from '../hyperapp'
+import {h} from '../framework'
 
 const Link = (props, children) => (state, actions) => {
   const originalClickHandler = props.onclick

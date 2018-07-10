@@ -1,5 +1,5 @@
 import once from 'once'
-import { h } from '../../hyperapp'
+import { h } from '../../framework'
 import ActivityCard from './ActivityCard'
 import Spinner from './Spinner'
 import styles from './Index.css'

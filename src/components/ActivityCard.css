@@ -74,3 +74,32 @@
   color: var(--primary-neutral);
   margin-top: 12px;
 }
+
+.actions {
+  margin-top: 12px;
+}
+
+.actionIcon {
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+}
+
+.actionButton {
+  color: #AC8EC9;
+  height: 15px;
+  padding: 0;
+  line-height: 15px;
+  font-size: 12px;
+}
+
+.goingButton {
+}
+
+.likeButton {
+  margin-left: 30px;
+}
+
+.activeButton {
+  color: var(--primary-dark);
+}

@@ -1,4 +1,4 @@
-import {h} from '../hyperapp'
+import {h} from '../framework'
 import matchRoute from './matchRoute'
 
 export default (props) => (state) => {

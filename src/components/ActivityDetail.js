@@ -1,4 +1,4 @@
-import { h } from '../../hyperapp'
+import { h } from '../../framework'
 import { Link } from '../../router'
 
 const handlePageCreate = (id, actions) => {

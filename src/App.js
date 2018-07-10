@@ -1,4 +1,4 @@
-import { h } from '../hyperapp'
+import { h } from '../framework'
 import { Route } from '../router'
 import Index from './components/Index'
 import ActivityDetail from './components/ActivityDetail'

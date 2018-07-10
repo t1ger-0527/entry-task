@@ -1,4 +1,4 @@
-import { h } from '../../hyperapp'
+import { h } from '../../framework'
 import styles from './Spinner.css'
 
 export default () => (
