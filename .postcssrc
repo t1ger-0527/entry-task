@@ -2,6 +2,9 @@
   "modules": true,
   "plugins": {
     "autoprefixer": {},
-    "postcss-preset-env": {}
+    "postcss-preset-env": {},
+    "postcss-modules": {
+      "generateScopedName": "[name]-[local]-[hash:base64:5]"
+    }
   }
 }

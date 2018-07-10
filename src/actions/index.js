@@ -27,4 +27,7 @@ export default {
   }),
   fetchSelf,
   fetchSelfOnce,
+  detailPage: {
+    expandDescription: () => () => ({isTruncated: false})
+  }
 }

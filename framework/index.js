@@ -351,7 +351,7 @@ export function app(state, actions, view, container) {
 
   // use synthetic event here to improve performance
   function eventListener(event) {
-    return event.currentTarget.events[event.type](event)
+    return event.currentTarget.events[event.type](event, wiredActions)
   }
 
   // update an element

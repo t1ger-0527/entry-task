@@ -1,0 +1,204 @@
+.root {
+}
+
+.header {
+  padding: var(--gap) var(--gap) 24px var(--gap);
+  border-bottom: var(--border);
+}
+
+.channels {
+}
+
+.title {
+  margin-top: 12px;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 25px;
+  color: var(--primary-dark);
+}
+
+.spinnerContainer {
+  padding-top: 45vh;
+  width: 100%;
+  text-align: center;
+}
+
+.user {
+  margin-top: 24px;
+}
+
+.userDescription {
+  display: inline-block;
+  margin-left: 12px;
+}
+
+.userAvatar {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  vertical-align: -5px;
+  background-color: #ddd;
+}
+
+.userName {
+  line-height: 18px;
+  font-size: 14px;
+  color: var(--primary-neutral);
+}
+
+.publishTime {
+  margin-top: 2px;
+  line-height: 15px;
+  font-size: 12px;
+  color: var(--disabled-background);
+}
+
+.nav {
+  display: flex;
+  border-bottom: var(--border);
+}
+
+/**
+ * FIXME: it would look bad on small screen. fix it
+  */
+.navItem {
+  position: relative;
+  flex: 1;
+  text-align: center;
+  overflow: visible;
+  padding: var(--gap) 4px;
+  color: #8c8c8c;
+}
+
+.navItem + .navItem::after {
+  display: block;
+  content: ' ';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 11px;
+  width: 1px;
+  border-left: var(--border);
+  transform: translateY(-50%);
+}
+
+.navIcon {
+  margin-right: 7px;
+}
+
+.activeNavItem {
+  color: var(--complement);
+}
+
+.detail {
+  padding: var(--gap) 0;
+  border-bottom: var(--border);
+}
+
+.horizontalScroll {
+  display: flex;
+  max-width: 100%;
+  overflow-x: scroll;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 12px;
+}
+
+.imageContainer {
+  flex-shrink: 0;
+  flex-grow: 0;
+  flex-basis: 180px;
+  width: 180px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #ddd;
+}
+
+.imageContainer:first-child {
+  margin-left: var(--gap);
+}
+
+.imageContainer + .imageContainer {
+  margin-left: 12px;
+}
+
+.rightPadding {
+  flex-shrink: 0;
+  flex-grow: 0;
+  width: var(--gap);
+}
+
+.description {
+  position: relative;
+  margin: 0 var(--gap);
+  color: var(--primary-neutral);
+  line-height: 18px;
+  font-size: 14px;
+  text-align: justify;
+  text-justify: auto;
+}
+
+.truncated {
+  max-height: 180px;
+  overflow: hidden;
+}
+
+.truncateTail {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 57px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(250, 249, 252, 0.7) 30%,
+    #faf9fc
+  );
+}
+
+.truncateButton {
+  position: absolute;
+  bottom: 3px;
+  right: 0;
+  background-color: var(--complement);
+  border-radius: 24px;
+  padding: 8px 26px;
+  line-height: 26px;
+  font-size: 20px;
+  color: var(--primary-neutral);
+  font-weight: 500;
+  transform: scale(0.5);
+  transform-origin: bottom right;
+}
+
+.marginPlaceholder {
+  height: var(--gap);
+  border-bottom: var(--border);
+}
+
+.time {
+  padding: var(--gap) 0;
+  margin: 0 var(--gap);
+}
+
+.sectionTitle {
+  position: relative;
+  padding-left: 8px;
+  line-height: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.sectionTitle::before {
+  content: ' ';
+  border-radius: 2px;
+  position: absolute;
+  height: 18px;
+  width: 4px;
+  background-color: var(--primary);
+  margin-left: -8px;
+}

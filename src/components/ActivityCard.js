@@ -9,6 +9,7 @@ import heartIcon from '../icons/like.svg'
 import heartIconOutline from '../icons/like-outline.svg'
 import { toTimeText } from '../lib/date'
 import truncate from '../lib/truncate'
+import ChannelItem from './ChannelItem'
 import styles from './ActivityCard.css'
 
 function handleActionButtonClick(activity, actionName, actions, event) {
@@ -42,7 +43,7 @@ export default ({ activityId, key }) => (state, actions) => {
           />
           <span className={styles.userName}>{starter.name}</span>
         </div>
-        <div className={styles.channel}>{channels[0].name}</div>
+        <ChannelItem channel={channels[0]} />
       </div>
       <div key="title" className={styles.title}>
         {title}
