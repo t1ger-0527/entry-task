@@ -15,6 +15,9 @@ import toIcon from '../icons/date-to.svg'
 import commentPrimary from '../icons/comment-primary.svg'
 import likePrimary from '../icons/like-primary.svg'
 import likeComplement from '../icons/like-complement.svg'
+import checkOutline from '../icons/check-outline.svg'
+import likeOutline from '../icons/like-outline.svg'
+import expandIcon from '../icons/expand.svg'
 import checkPrimary from '../icons/check-primary.svg'
 import checkComplement from '../icons/check-outline-complement.svg'
 import closeIcon from '../icons/cross.svg'
@@ -26,7 +29,7 @@ import styles from './ActivityDetailPage.css'
 
 const handlePageCreate = (id, actions) => {
   document.scrollingElement.scroll({ top: 0 })
-  fetch(`http://localhost:2333/activities/${id}`)
+  fetch(`http://10.22.203.174:2333/activities/${id}`)
     .then((res) => res.json())
     .then((activity) => {
       actions.updateActivities(activity)
@@ -113,15 +116,15 @@ const CommentItem = ({ comment, activity }) => {
 }
 
 const handlePageDestroy = (e, actions) => {
-  // TODO: recover the page state here.
+  actions.resetDetailPage()
 }
 
 const handleSubmitComment = (activity, replyingTo, e, actions) => {
   e.preventDefault()
   const content = e.target.elements[1].value
-  fetch(`http://localhost:2333/activities/${activity.id}/comments`, {
+  fetch(`http://10.22.203.174:2333/activities/${activity.id}/comments`, {
     method: 'POST',
-    body: JSON.stringify({ content, replyingTo: replyingTo.id }),
+    body: JSON.stringify({ content, replyingTo: replyingTo && replyingTo.id }),
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
@@ -140,7 +143,62 @@ const handleSubmitComment = (activity, replyingTo, e, actions) => {
 }
 
 const handleTruncateTailClick = (e, actions) => {
+  console.log('expand: ', e)
   actions.detailPage.expandDescription()
+}
+
+const UserAvatarListLine = ({ users, key, isFlex }) => (
+  <div className={styles.userAvatarLine} key={key}>
+    {users.map((user, index) => user ? (
+      <img
+        className={styles.userAvatarItem}
+        key={user.id}
+        src={user.avatarUrl}
+        alt="user avatar"
+      />
+    ) : (
+      <div className={styles.userAvatarItem} key={index} />
+    ))}
+  </div>
+)
+
+const alignUserList = (users, length) =>
+  users.concat([...Array(length - users.length).keys()].map(() => null))
+const UserAvatarList = ({ users, key }) => (state, actions) => {
+  // TODO: decide maximun number by window size
+  const maxUserNumber = 7
+  const expanded = state.detailPage.userListsExpanded[key]
+  const handleExpand = (e, actions) => {
+    actions.detailPage.expandUserList(key)
+  }
+  let userLines = []
+  if (expanded) {
+    userLines = users.reduce((a, user, index) => {
+      const lineNumber = Math.floor(index / maxUserNumber)
+      if (!a[lineNumber]) {
+        a[lineNumber] = []
+      }
+      a[lineNumber].push(user)
+      return a
+    }, [])
+  }
+  return (
+    <div className={styles.userAvatarList}>
+      {expanded ? (
+        userLines.map((userLine, i) => (
+          <UserAvatarListLine key={i} users={alignUserList(userLine, maxUserNumber)} />
+        ))
+      ) : (
+        <UserAvatarListLine users={alignUserList(users.slice(0, maxUserNumber), maxUserNumber)} />
+      )}
+      {users.length > maxUserNumber &&
+        !expanded && (
+          <button className={styles.expandUserList} onclick={handleExpand}>
+            <Icon src={expandIcon} size={16} />
+          </button>
+        )}
+    </div>
+  )
 }
 
 export default ({ params }) => (state, actions) => {
@@ -216,9 +274,13 @@ export default ({ params }) => (state, actions) => {
             <Icon src={closeIcon} size={16} />
           </button>
           <input
+            autofocus
+            oncreate={(e) => e.focus()}
             className={styles.commentInput}
             placeholder={
-              replyingTo ? `Reply @${replyingTo.name}` : 'Leave your comment here'
+              replyingTo
+                ? `Reply @${replyingTo.name}`
+                : 'Leave your comment here'
             }
             name="comment"
             type="text"
@@ -230,6 +292,108 @@ export default ({ params }) => (state, actions) => {
       </form>
     )
 
+    const detail = (
+      <section className={styles.detail}>
+        <div className={styles.horizontalScroll}>
+          {images.map((imgSrc) => (
+            <div className={styles.imageContainer}>
+              <img
+                className={styles.image}
+                src={imgSrc}
+                alt="activity images"
+              />
+            </div>
+          ))}
+          <div className={styles.rightPadding} />
+        </div>
+        <div
+          className={cx(styles.description, {
+            [styles.truncated]: isTruncated,
+          })}
+          onclick={handleTruncateTailClick}
+        >
+          {description}
+          {isTruncated && (
+            <div
+              className={styles.truncateTail}
+              onclick={handleTruncateTailClick}
+            >
+              <button onclick={handleTruncateTailClick} className={styles.truncateButton}>VIEW ALL</button>
+            </div>
+          )}
+        </div>
+        <div className={styles.marginPlaceholder} />
+
+        <div className={styles.detailSection}>
+          <div className={styles.sectionTitle}>When</div>
+          <div className={styles.timeDisplaySection}>
+            <TimeDisplay timestamp={leavingTime} iconSrc={fromIcon} />
+            <TimeDisplay timestamp={returnTime} iconSrc={toIcon} />
+          </div>
+        </div>
+        <div className={styles.marginPlaceholder} />
+
+        <div className={styles.detailSection}>
+          <div className={styles.sectionTitle}>Where</div>
+          <address>
+            <div className={styles.addressFirstLine}>{address.firstLine}</div>
+            <div className={styles.addressSecondLine}>{address.secondLine}</div>
+          </address>
+          <div className={styles.mapContainer}>
+            <iframe className={styles.map} src={embedMapUrl} frameBorder="0" />
+          </div>
+        </div>
+      </section>
+    )
+
+    const commentNodes = (
+      <div className={styles.commentSection}>
+        {comments.map((comment) => (
+          <CommentItem key={comment.id} comment={comment} activity={activity} />
+        ))}
+      </div>
+    )
+
+    const header = (
+      <header className={styles.header}>
+        <div className={styles.channels}>
+          {channels.map((c) => <ChannelItem channel={c} key={c.id} />)}
+        </div>
+        <h1 className={styles.title}>{title}</h1>
+        <div className={styles.user}>
+          <img
+            className={styles.userAvatar}
+            src={starter.avatarUrl}
+            alt={`${starter.name}'s avatar`}
+          />
+          <span className={styles.userDescription}>
+            <div className={styles.userName}>{starter.name}</div>
+            <div className={styles.publishTime}>Published 2 days ago.</div>
+          </span>
+        </div>
+      </header>
+    )
+
+    const nav = (
+      <nav className={styles.nav} oncreate={handleNavCreate}>
+        <NavItem
+          index={0}
+          iconSrc={{ active: infoIcon, inactive: infoIconOutline }}
+          text="Details"
+        />
+        <NavItem
+          index={1}
+          iconSrc={{ active: peopleIcon, inactive: peopleIconOutline }}
+          text="Participants"
+        />
+        <NavItem
+          index={2}
+          iconSrc={{ active: commentIcon, inactive: commentIconOutline }}
+          text="Comments"
+        />
+      </nav>
+    )
+
     return (
       <div
         className={styles.root}
@@ -237,108 +401,35 @@ export default ({ params }) => (state, actions) => {
         oncreate={() => handlePageCreate(activityId, actions)}
         ondestroy={handlePageDestroy}
       >
-        <header className={styles.header}>
-          <div className={styles.channels}>
-            {channels.map((c) => <ChannelItem channel={c} key={c.id} />)}
-          </div>
-          <h1 className={styles.title}>{title}</h1>
-          <div className={styles.user}>
-            <img
-              className={styles.userAvatar}
-              src={starter.avatarUrl}
-              alt={`${starter.name}'s avatar`}
+        {header}
+        {nav}
+        {detail}
+        <div className={styles.goingUserList}>
+          <div className={styles.userListTitle}>
+            <Icon
+              className={styles.userListIcon}
+              src={checkOutline}
+              size={13}
+              topOffset={-2}
             />
-            <span className={styles.userDescription}>
-              <div className={styles.userName}>{starter.name}</div>
-              <div className={styles.publishTime}>Published 2 days ago.</div>
-            </span>
+            {activity.going.length} going
           </div>
-        </header>
-        <nav className={styles.nav} oncreate={handleNavCreate}>
-          <NavItem
-            index={0}
-            iconSrc={{ active: infoIcon, inactive: infoIconOutline }}
-            text="Details"
-          />
-          <NavItem
-            index={1}
-            iconSrc={{ active: peopleIcon, inactive: peopleIconOutline }}
-            text="Participants"
-          />
-          <NavItem
-            index={2}
-            iconSrc={{ active: commentIcon, inactive: commentIconOutline }}
-            text="Comments"
-          />
-        </nav>
-        <section className={styles.detail}>
-          <div className={styles.horizontalScroll}>
-            {images.map((imgSrc) => (
-              <div className={styles.imageContainer}>
-                <img
-                  className={styles.image}
-                  src={imgSrc}
-                  alt="activity images"
-                />
-              </div>
-            ))}
-            <div className={styles.rightPadding} />
+          <UserAvatarList users={activity.going} key="going" />
+        </div>
+        <div className={styles.marginPlaceholder} />
+        <div className={styles.likingUserList}>
+          <div className={styles.userListTitle}>
+            <Icon
+              className={styles.userListIcon}
+              src={likeOutline}
+              size={13}
+              topOffset={-2}
+            />
+            {activity.liked.length} likes
           </div>
-          <div
-            className={cx(styles.description, {
-              [styles.truncated]: isTruncated,
-            })}
-            onclick={handleTruncateTailClick}
-          >
-            {description}
-            {isTruncated && (
-              <div
-                className={styles.truncateTail}
-                onclick={handleTruncateTailClick}
-              >
-                <button className={styles.truncateButton}>VIEW ALL</button>
-              </div>
-            )}
-          </div>
-          <div className={styles.marginPlaceholder} />
-
-          <div className={styles.detailSection}>
-            <div className={styles.sectionTitle}>When</div>
-            <div className={styles.timeDisplaySection}>
-              <TimeDisplay timestamp={leavingTime} iconSrc={fromIcon} />
-              <TimeDisplay timestamp={returnTime} iconSrc={toIcon} />
-            </div>
-          </div>
-          <div className={styles.marginPlaceholder} />
-
-          <div className={styles.detailSection}>
-            <div className={styles.sectionTitle}>Where</div>
-            <address>
-              <div className={styles.addressFirstLine}>{address.firstLine}</div>
-              <div className={styles.addressSecondLine}>
-                {address.secondLine}
-              </div>
-            </address>
-            <div className={styles.mapContainer}>
-              <iframe
-                className={styles.map}
-                src={embedMapUrl}
-                frameborder="0"
-              />
-            </div>
-          </div>
-          <div className={styles.marginPlaceholder} />
-
-          <div className={styles.commentSection}>
-            {comments.map((comment) => (
-              <CommentItem
-                key={comment.id}
-                comment={comment}
-                activity={activity}
-              />
-            ))}
-          </div>
-        </section>
+          <UserAvatarList users={activity.liked} key="liked" />
+        </div>
+        {commentNodes}
         <div className={styles.bottomToolBarPlaceholder} />
         <div className={styles.bottomToolBar}>
           {commenting ? toolbarCommentSection : toolbarButtonSet}

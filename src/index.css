@@ -11,6 +11,7 @@
   --disabled-background: #BABABA;
   --disabled-text: #666;
   --gap: 16px;
+  --global-background: #faf9fc;
   --nav-height: 40px;
 
   --border: 1px solid #e8e8e8;
@@ -24,5 +25,5 @@ html {
 :global(#root) {
   max-width: 600px;
   margin: auto;
-  background-color: #faf9fc;
+  background-color: var(--global-background);
 }

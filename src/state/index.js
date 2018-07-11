@@ -5,6 +5,10 @@ export const defaultDetailPageState = {
   navActiveIndex: 0,
   commenting: false,
   replyingTo: null,
+  userListsExpanded: {
+    going: false,
+    liked: false,
+  }
 }
 
 export default {

@@ -7,7 +7,7 @@ import styles from './Index.css'
 const fetchActivity = (query = '', actions, mode = 'replace') => {
   console.log('trigger fetch')
   actions.startSearchActivities()
-  fetch('http://localhost:2333/activities')
+  fetch('http://10.22.203.174:2333/activities')
     .then((res) => res.json())
     .then(({ data: activities }) => {
       actions.updateActivities(activities)

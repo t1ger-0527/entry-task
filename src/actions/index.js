@@ -1,9 +1,10 @@
 import once from 'once'
 import { merge, mergeIds } from '../helpers/state'
 import { location } from '../../router'
+import {defaultDetailPageState} from "../state";
 
 const fetchSelf = () => () =>
-  fetch('http://localhost:2333/me', { credentials: 'include' })
+  fetch('http://10.22.203.174:2333/me', { credentials: 'include' })
     .then((res) => res.json())
     .then((self) => ({ self }))
     .catch(() => ({ self: null }))
@@ -27,6 +28,9 @@ export default {
   }),
   fetchSelf,
   fetchSelfOnce,
+  resetDetailPage: () => ({
+    detailPage: defaultDetailPageState,
+  }),
   detailPage: {
     expandDescription: () => () => ({ isTruncated: false }),
     toggleCommenting: (e) => (state) => {
@@ -43,6 +47,12 @@ export default {
       replyingTo: replyingTo && replyingTo.id === replyTo.id ? null : replyTo,
       commenting: true,
     }),
+    expandUserList: (key) => ({userListsExpanded}) => ({
+      userListsExpanded: {
+        ...userListsExpanded,
+        [key]: true,
+      }
+    })
   },
 }
 
@@ -50,9 +60,12 @@ export function performActionOnActivity(activity, actionName, actions, event) {
   if (event && event.preventDefault) {
     event.preventDefault()
   }
-  fetch(`http://localhost:2333/activities/${activity.id}`, {
+  fetch(`http://10.22.203.174:2333/activities/${activity.id}`, {
     method: 'PUT',
     body: JSON.stringify({ [actionName]: !activity[actionName] }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
   }).then(
     actions.updateActivities({
       id: activity.id,
