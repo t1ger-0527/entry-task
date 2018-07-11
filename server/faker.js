@@ -101,5 +101,6 @@ module.exports = {
   times,
   activity,
   channel,
+  comment,
   user,
 }

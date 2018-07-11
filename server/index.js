@@ -1,7 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const { activity, times, user } = require('./faker')
+const { activity, times, user, comment } = require('./faker')
 
 const app = express()
 
@@ -13,7 +13,10 @@ app.use((req, res, next) => {
   if (allowedHeaders) {
     res.setHeader('Access-Control-Allow-Headers', allowedHeaders)
   }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT')
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'POST, GET, OPTIONS, DELETE, PUT',
+  )
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   next()
 })
@@ -31,16 +34,16 @@ app.get('/activities', (req, res) => {
     paging: {
       next: '/activities',
       is_end: false,
-    }
+    },
   })
 })
 
 app.get('/activities/:id', (req, res) => {
-  res.send(activity({id: req.params.id}))
+  res.send(activity({ id: req.params.id }))
 })
 
 app.put('/activities/:id', (req, res) => {
-  const theActivity = activity({id: req.params.id})
+  const theActivity = activity({ id: req.params.id })
   Object.assign(theActivity, req.body)
   res.send(theActivity)
 })
@@ -50,15 +53,34 @@ app.get('/me', (req, res) => {
   if (!req.cookies['_e']) {
     res.sendStatus(401)
   } else {
-    res.send(user({id: req.cookies['_e']}))
+    const id = req.cookies['_e']
+    res.send(user({ id, name: id }))
   }
 })
 
 app.post('/login', (req, res) => {
-  const {email} = req.body
+  const { email } = req.body
   const userName = email.split('@')[0]
-  res.cookie('_e', userName, {maxAge: 900000})
+  res.cookie('_e', userName, { maxAge: 900000 })
   res.sendStatus(200)
+})
+
+app.post('/activities/:id/comments', (req, res) => {
+  const { content, replyingTo } = req.body
+  let replyingToUser
+  if (replyingTo) {
+    replyingToUser = user({ id: replyingTo })
+  }
+  const userId = req.cookies['_e']
+  const newComment = comment({
+    author: user({ id: userId }),
+    content,
+    created: Date.now(),
+    replying: replyingToUser,
+  })
+  const theActivity = activity({ id: req.params.id })
+  theActivity.comments.push(newComment)
+  res.send(theActivity)
 })
 
 app.listen(2333)

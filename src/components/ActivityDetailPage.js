@@ -12,7 +12,15 @@ import commentIconOutline from '../icons/comment-outline.svg'
 import replyIcon from '../icons/reply.svg'
 import fromIcon from '../icons/date-from.svg'
 import toIcon from '../icons/date-to.svg'
+import commentPrimary from '../icons/comment-primary.svg'
+import likePrimary from '../icons/like-primary.svg'
+import likeComplement from '../icons/like-complement.svg'
+import checkPrimary from '../icons/check-primary.svg'
+import checkComplement from '../icons/check-outline-complement.svg'
+import closeIcon from '../icons/cross.svg'
+import sendIcon from '../icons/send.svg'
 import ChannelItem from './ChannelItem'
+import { performActionOnActivity } from '../actions'
 import Icon from './Icon'
 import styles from './ActivityDetailPage.css'
 
@@ -67,8 +75,12 @@ const TimeDisplay = ({ timestamp, iconSrc }) => {
   )
 }
 
+// TODO: mention should be clickable
 const CommentItem = ({ comment, activity }) => {
-  const { author } = comment
+  const { author, replying } = comment
+  const handleReplyButtonClick = (e, actions) => {
+    actions.detailPage.toggleReplying(author)
+  }
   return (
     <div className={styles.commentItem}>
       <img
@@ -83,9 +95,12 @@ const CommentItem = ({ comment, activity }) => {
             {distanceInWordsStrict(Date.now(), comment.created)} ago
           </span>
         </div>
-        <div className={styles.commentContent}>{comment.content}</div>
+        <div className={styles.commentContent}>
+          {replying && <span className={styles.mention}>@{replying.name}</span>}{' '}
+          {comment.content}
+        </div>
       </div>
-      <button className={styles.replyButton}>
+      <button onclick={handleReplyButtonClick} className={styles.replyButton}>
         <Icon
           className={styles.replyIcon}
           src={replyIcon}
@@ -101,6 +116,29 @@ const handlePageDestroy = (e, actions) => {
   // TODO: recover the page state here.
 }
 
+const handleSubmitComment = (activity, replyingTo, e, actions) => {
+  e.preventDefault()
+  const content = e.target.elements[1].value
+  fetch(`http://localhost:2333/activities/${activity.id}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ content, replyingTo: replyingTo.id }),
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((res) => res.json())
+    .then((activity) => actions.updateActivities(activity))
+    .then(() => {
+      actions.detailPage.toggleCommenting()
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.documentElement.getBoundingClientRect().height,
+        })
+      }, 16.667)
+    })
+}
+
 const handleTruncateTailClick = (e, actions) => {
   actions.detailPage.expandDescription()
 }
@@ -108,9 +146,25 @@ const handleTruncateTailClick = (e, actions) => {
 export default ({ params }) => (state, actions) => {
   const { activityId } = params
   const activity = state.activityMap[activityId]
-  const {
-    detailPage: { isTruncated },
-  } = state
+  const { isTruncated, commenting, replyingTo } = state.detailPage
+  const { toggleCommenting } = actions.detailPage
+  const handleSubmitCommentImpl = handleSubmitComment.bind(
+    null,
+    activity,
+    replyingTo,
+  )
+  const likeActivity = performActionOnActivity.bind(
+    null,
+    activity,
+    'meLiking',
+    actions,
+  )
+  const goActivity = performActionOnActivity.bind(
+    null,
+    activity,
+    'meGoing',
+    actions,
+  )
   if (activity) {
     const {
       title,
@@ -125,7 +179,56 @@ export default ({ params }) => (state, actions) => {
         address,
         embedMapUrl,
       },
+      meLiking,
+      meGoing,
     } = activity
+
+    const toolbarButtonSet = [
+      <button
+        key="comment"
+        className={styles.commentButton}
+        onclick={toggleCommenting}
+      >
+        <Icon src={commentPrimary} size={24} />
+      </button>,
+      <button key="like" className={styles.likeButton} onclick={likeActivity}>
+        <Icon src={meLiking ? likeComplement : likePrimary} size={24} />
+      </button>,
+      <button
+        key="go"
+        className={cx(styles.goButton, { [styles.activeButton]: meGoing })}
+        onclick={goActivity}
+      >
+        <Icon
+          className={styles.goIcon}
+          src={meGoing ? checkPrimary : checkComplement}
+          size={24}
+          topOffset={-6}
+        />
+        {meGoing ? 'I am going' : 'Join'}
+      </button>,
+    ]
+
+    const toolbarCommentSection = (
+      <form className={styles.commentForm} onsubmit={handleSubmitCommentImpl}>
+        <div className={styles.inputContainer}>
+          <button className={styles.closeComment} onclick={toggleCommenting}>
+            <Icon src={closeIcon} size={16} />
+          </button>
+          <input
+            className={styles.commentInput}
+            placeholder={
+              replyingTo ? `Reply @${replyingTo.name}` : 'Leave your comment here'
+            }
+            name="comment"
+            type="text"
+          />
+        </div>
+        <button className={styles.submitCommentButton} type="submit">
+          <Icon src={sendIcon} width={28} height={24} />
+        </button>
+      </form>
+    )
 
     return (
       <div
@@ -198,6 +301,7 @@ export default ({ params }) => (state, actions) => {
             )}
           </div>
           <div className={styles.marginPlaceholder} />
+
           <div className={styles.detailSection}>
             <div className={styles.sectionTitle}>When</div>
             <div className={styles.timeDisplaySection}>
@@ -206,6 +310,7 @@ export default ({ params }) => (state, actions) => {
             </div>
           </div>
           <div className={styles.marginPlaceholder} />
+
           <div className={styles.detailSection}>
             <div className={styles.sectionTitle}>Where</div>
             <address>
@@ -222,6 +327,8 @@ export default ({ params }) => (state, actions) => {
               />
             </div>
           </div>
+          <div className={styles.marginPlaceholder} />
+
           <div className={styles.commentSection}>
             {comments.map((comment) => (
               <CommentItem
@@ -232,6 +339,10 @@ export default ({ params }) => (state, actions) => {
             ))}
           </div>
         </section>
+        <div className={styles.bottomToolBarPlaceholder} />
+        <div className={styles.bottomToolBar}>
+          {commenting ? toolbarCommentSection : toolbarButtonSet}
+        </div>
       </div>
     )
   }

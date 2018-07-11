@@ -10,21 +10,8 @@ import heartIconOutline from '../icons/like-outline.svg'
 import { toTimeText } from '../lib/date'
 import truncate from '../lib/truncate'
 import ChannelItem from './ChannelItem'
+import {performActionOnActivity} from '../actions'
 import styles from './ActivityCard.css'
-
-function handleActionButtonClick(activity, actionName, actions, event) {
-  event.preventDefault()
-  console.log('trigger button click')
-  fetch(`http://localhost:2333/activities/${activity.id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ [actionName]: !activity[actionName] }),
-  }).then(
-    actions.updateActivities({
-      id: activity.id,
-      [actionName]: !activity[actionName],
-    }),
-  )
-}
 
 export default ({ activityId, key }) => (state, actions) => {
   const activity = state.activityMap[activityId]
@@ -64,7 +51,7 @@ export default ({ activityId, key }) => (state, actions) => {
       </div>
       <div className={styles.actions}>
         <button
-          onclick={handleActionButtonClick.bind(
+          onclick={performActionOnActivity.bind(
             null,
             activity,
             'meGoing',
@@ -83,7 +70,7 @@ export default ({ activityId, key }) => (state, actions) => {
           {activity.meGoing ? 'I am going!' : `${activity.going.length} Going`}
         </button>
         <button
-          onclick={handleActionButtonClick.bind(
+          onclick={performActionOnActivity.bind(
             null,
             activity,
             'meLiking',

@@ -328,3 +328,93 @@
   font-size: 10px;
   color: #bababa;
 }
+
+.bottomToolBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+}
+
+.likeButton,
+.commentButton,
+.goButton {
+  padding: var(--gap);
+}
+
+.likeButton,
+.commentButton {
+  flex-grow: 3;
+  flex-shrink: 0;
+  background-color: var(--primary);
+}
+
+.goButton {
+  flex-grow: 4;
+  flex-shrink: 0;
+  width: 120px;
+  background-color: var(--complement);
+  color: var(--complement-dark-2);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.bottomToolBarPlaceholder {
+  height: 56px;
+}
+
+.goIcon {
+  margin-right: 12px;
+}
+
+.commentForm {
+  display: flex;
+  width: 100%;
+}
+
+.inputContainer {
+  flex-grow: 1;
+  flex-shrink: 1;
+  background-color: var(--primary);
+  display: flex;
+  align-items: center;
+}
+
+.submitCommentButton {
+  flex-grow: 0;
+  flex-shrink: 0;
+  background-color: var(--complement);
+  padding: var(--gap) 18px;
+}
+
+.closeComment {
+  flex-shrink: 0;
+  flex-grow: 0;
+  margin-left: 6px;
+  padding: 16px 4px;
+}
+
+.commentInput {
+  flex-shrink: 1;
+  flex-grow: 1;
+  margin-left: 6px;
+  margin-right: 14px;
+  border-radius: 20px;
+  padding: 7px 19px;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--primary-neutral);
+  background-color: #fff;
+}
+
+.commentInput::placeholder {
+  color: var(--primary-light);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.mention {
+  text-decoration: underline;
+  color: var(--primary);
+}

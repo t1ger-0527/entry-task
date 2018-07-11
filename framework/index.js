@@ -402,8 +402,7 @@ export function app(state, actions, view, container) {
         } else {
           element.removeEventListener(eventName, eventListener)
         }
-      }
-      if (value === null || value === false) {
+      } else if (value === null || value === false) {
         element.removeAttribute(name)
       } else {
         element.setAttribute(name, value)
@@ -446,6 +445,11 @@ export function app(state, actions, view, container) {
           return result
         }
       } else {
+        /**
+         * for nested actions:
+         * they can only get states on the same path,
+         * and change states on the same path.
+          */
         actions[key] = wireStateToActions(
           path.concat(key),
           { ...state[key] },
