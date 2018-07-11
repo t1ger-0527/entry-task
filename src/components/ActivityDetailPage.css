@@ -97,6 +97,7 @@
 }
 
 .detail {
+  position: relative;
   padding: var(--gap) 0;
   border-bottom: var(--border);
 }
@@ -274,6 +275,7 @@
 }
 
 .commentSection {
+  position: relative;
   padding: 24px var(--gap) var(--gap);
 }
 
@@ -429,6 +431,7 @@
 }
 
 .goingUserList {
+  position: relative;
   padding-bottom: 0;
 }
 
@@ -485,4 +488,9 @@
 
 .userAvatarLine + .userAvatarLine {
   margin-top: 12px;
+}
+
+.anchor {
+  position: absolute;
+  top: -90px;
 }

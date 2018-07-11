@@ -34,14 +34,38 @@ const handlePageCreate = (id, actions) => {
     .then((activity) => {
       actions.updateActivities(activity)
     })
+  document.addEventListener('scroll', () => {
+    let activeNavIndex = anchors.findIndex((anchor) => {
+      if (anchor) {
+        const { top } = anchor.getBoundingClientRect()
+        return top > 0
+      } else {
+        return true
+      }
+    })
+    if (activeNavIndex === -1) {
+      activeNavIndex = 2
+    } else if (activeNavIndex === 0) {
+      activeNavIndex = 0
+    } else {
+      activeNavIndex -= 1
+    }
+    actions.detailPage.updateNavActiveIndex(activeNavIndex)
+  })
 }
 
-const handleNavCreate = () => {}
+const handleNavClick = (index, e, actions) => {
+  actions.detailPage.updateNavActiveIndex(index)
+  if (anchors[index]) {
+    anchors[index].scrollIntoView()
+  }
+}
 
 const NavItem = ({ index, iconSrc, text }) => (state) => {
   const isActive = state.detailPage.navActiveIndex === index
   return (
     <div
+      onclick={handleNavClick.bind(null, index)}
       className={cx(styles.navItem, {
         [styles.activeNavItem]: isActive,
       })}
@@ -79,13 +103,13 @@ const TimeDisplay = ({ timestamp, iconSrc }) => {
 }
 
 // TODO: mention should be clickable
-const CommentItem = ({ comment, activity }) => {
+const CommentItem = ({ comment, activity, key }) => {
   const { author, replying } = comment
   const handleReplyButtonClick = (e, actions) => {
     actions.detailPage.toggleReplying(author)
   }
   return (
-    <div className={styles.commentItem}>
+    <div key={key} className={styles.commentItem}>
       <img
         className={styles.commentAuthorAvatar}
         src={author.avatarUrl}
@@ -143,24 +167,28 @@ const handleSubmitComment = (activity, replyingTo, e, actions) => {
 }
 
 const handleTruncateTailClick = (e, actions) => {
-  console.log('expand: ', e)
   actions.detailPage.expandDescription()
 }
 
 const UserAvatarListLine = ({ users, key, isFlex }) => (
   <div className={styles.userAvatarLine} key={key}>
-    {users.map((user, index) => user ? (
-      <img
-        className={styles.userAvatarItem}
-        key={user.id}
-        src={user.avatarUrl}
-        alt="user avatar"
-      />
-    ) : (
-      <div className={styles.userAvatarItem} key={index} />
-    ))}
+    {users.map(
+      (user, index) =>
+        user ? (
+          <img
+            className={styles.userAvatarItem}
+            key={user.id}
+            src={user.avatarUrl}
+            alt="user avatar"
+          />
+        ) : (
+          <div className={styles.userAvatarItem} key={index} />
+        ),
+    )}
   </div>
 )
+
+let anchors = []
 
 const alignUserList = (users, length) =>
   users.concat([...Array(length - users.length).keys()].map(() => null))
@@ -186,10 +214,15 @@ const UserAvatarList = ({ users, key }) => (state, actions) => {
     <div className={styles.userAvatarList}>
       {expanded ? (
         userLines.map((userLine, i) => (
-          <UserAvatarListLine key={i} users={alignUserList(userLine, maxUserNumber)} />
+          <UserAvatarListLine
+            key={i}
+            users={alignUserList(userLine, maxUserNumber)}
+          />
         ))
       ) : (
-        <UserAvatarListLine users={alignUserList(users.slice(0, maxUserNumber), maxUserNumber)} />
+        <UserAvatarListLine
+          users={alignUserList(users.slice(0, maxUserNumber), maxUserNumber)}
+        />
       )}
       {users.length > maxUserNumber &&
         !expanded && (
@@ -294,6 +327,7 @@ export default ({ params }) => (state, actions) => {
 
     const detail = (
       <section className={styles.detail}>
+        <span className={styles.anchor} oncreate={(e) => (anchors[0] = e)} />
         <div className={styles.horizontalScroll}>
           {images.map((imgSrc) => (
             <div className={styles.imageContainer}>
@@ -318,7 +352,12 @@ export default ({ params }) => (state, actions) => {
               className={styles.truncateTail}
               onclick={handleTruncateTailClick}
             >
-              <button onclick={handleTruncateTailClick} className={styles.truncateButton}>VIEW ALL</button>
+              <button
+                onclick={handleTruncateTailClick}
+                className={styles.truncateButton}
+              >
+                VIEW ALL
+              </button>
             </div>
           )}
         </div>
@@ -348,9 +387,16 @@ export default ({ params }) => (state, actions) => {
 
     const commentNodes = (
       <div className={styles.commentSection}>
-        {comments.map((comment) => (
-          <CommentItem key={comment.id} comment={comment} activity={activity} />
-        ))}
+        <span className={styles.anchor} oncreate={(e) => (anchors[2] = e)} />
+        <span>
+          {comments.map((comment) => (
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              activity={activity}
+            />
+          ))}
+        </span>
       </div>
     )
 
@@ -375,7 +421,7 @@ export default ({ params }) => (state, actions) => {
     )
 
     const nav = (
-      <nav className={styles.nav} oncreate={handleNavCreate}>
+      <nav className={styles.nav}>
         <NavItem
           index={0}
           iconSrc={{ active: infoIcon, inactive: infoIconOutline }}
@@ -394,6 +440,37 @@ export default ({ params }) => (state, actions) => {
       </nav>
     )
 
+    const goingUserList = (
+      <div className={styles.goingUserList}>
+        <span className={styles.anchor} oncreate={(e) => (anchors[1] = e)} />
+        <div className={styles.userListTitle}>
+          <Icon
+            className={styles.userListIcon}
+            src={checkOutline}
+            size={13}
+            topOffset={-2}
+          />
+          {activity.going.length} going
+        </div>
+        <UserAvatarList users={activity.going} key="going" />
+      </div>
+    )
+
+    const likingUserList = (
+      <div className={styles.likingUserList}>
+        <div className={styles.userListTitle}>
+          <Icon
+            className={styles.userListIcon}
+            src={likeOutline}
+            size={13}
+            topOffset={-2}
+          />
+          {activity.liked.length} likes
+        </div>
+        <UserAvatarList users={activity.liked} key="liked" />
+      </div>
+    )
+
     return (
       <div
         className={styles.root}
@@ -404,31 +481,9 @@ export default ({ params }) => (state, actions) => {
         {header}
         {nav}
         {detail}
-        <div className={styles.goingUserList}>
-          <div className={styles.userListTitle}>
-            <Icon
-              className={styles.userListIcon}
-              src={checkOutline}
-              size={13}
-              topOffset={-2}
-            />
-            {activity.going.length} going
-          </div>
-          <UserAvatarList users={activity.going} key="going" />
-        </div>
+        {goingUserList}
         <div className={styles.marginPlaceholder} />
-        <div className={styles.likingUserList}>
-          <div className={styles.userListTitle}>
-            <Icon
-              className={styles.userListIcon}
-              src={likeOutline}
-              size={13}
-              topOffset={-2}
-            />
-            {activity.liked.length} likes
-          </div>
-          <UserAvatarList users={activity.liked} key="liked" />
-        </div>
+        {likingUserList}
         {commentNodes}
         <div className={styles.bottomToolBarPlaceholder} />
         <div className={styles.bottomToolBar}>

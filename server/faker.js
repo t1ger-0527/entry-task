@@ -91,7 +91,8 @@ const activity = genWithSaving(activityMap, (o) =>
       meLiking: false,
       going: sample(users, sample(times((i) => i + 3, 30))[0]),
       liked: sample(users, sample(times((i) => i + 3, 20))[0]),
-      comments: times(comment, sample(times((i) => i + 3, 10))[0]),
+      // comments: times(comment, sample(times((i) => i + 3, 10))[0]),
+      comments: times(comment, 30),
     },
     o,
   )
