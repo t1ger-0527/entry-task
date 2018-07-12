@@ -69,8 +69,14 @@ export default {
       Object.assign(document.documentElement.style, {
         overflow: 'hidden',
       })
+      Object.assign(document.body.style, {
+        overflow: 'hidden',
+      })
     } else {
       Object.assign(document.documentElement.style, {
+        overflow: 'initial',
+      })
+      Object.assign(document.body.style, {
         overflow: 'initial',
       })
     }
@@ -79,14 +85,33 @@ export default {
     }
   },
   searchPanel: {
-    toggleDateTag: (tagName) => (state) => {
+    toggleDateTag: (tagName) => (state, actions) => {
       if (state.activeDateTag === tagName || tagName === 'ANYTIME') {
         return {
           activeDateTag: null,
         }
       }
+      if (tagName === 'LATER') {
+        return {
+          activeDateTag: 'LATER',
+          dateFields: {
+            from: Date.now(),
+            to: Date.now(),
+          }
+        }
+      } else {
+        return {
+          activeDateTag: tagName,
+          dateFields: null,
+        }
+      }
+    },
+    changeSearchDateField: (field, value) => (state) => {
       return {
-        activeDateTag: tagName,
+        dateFields: {
+          ...state.dateFields,
+          [field]: value,
+        }
       }
     },
     toggleChannelTag: (tagName) => (state) => {

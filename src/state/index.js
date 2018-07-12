@@ -9,7 +9,15 @@ export const defaultDetailPageState = {
     going: false,
     liked: false,
   },
-  isSidePanelActive: false,
+}
+
+export const defaultSearchPanelState = {
+  activeDateTag: null,
+  activeChannelTags: [],
+  dateFields: {
+    from: Date.now(),
+    to: Date.now(),
+  }
 }
 
 export default {
@@ -20,9 +28,7 @@ export default {
   searchingActivities: false,
   detailNavActiveIndex: 0,
   detailPage: defaultDetailPageState,
-  searchPanel: {
-    activeDateTag: null,
-    activeChannelTags: [],
-  },
+  searchPanel: defaultSearchPanelState,
   currentSearching: null,
+  isSidePanelActive: false,
 }

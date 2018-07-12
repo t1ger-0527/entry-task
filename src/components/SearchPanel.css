@@ -87,3 +87,61 @@
   color: var(--primary);
   line-height: 13px;
 }
+
+.dateInputContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  padding: 10px;
+  margin-top: 12px;
+  background-color: #fff;
+}
+
+.dateInputContainer::after {
+  position: absolute;
+  top: -4px;
+  left: 24px;
+  content: ' ';
+  display: block;
+  width: 8px;
+  height: 8px;
+  transform: rotateZ(45deg);
+  background-color: #fff;
+}
+
+.fakeDateInput {
+  position: relative;
+  text-align: center;
+  flex-shrink: 0;
+  flex-grow: 0;
+  width: 73px;
+  height: 18px;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--primary);
+}
+
+.dateSeperator {
+  display: inline-block;
+  width: 6px;
+  height: 1px;
+  background-color: rgba(0,0,0,.09);
+}
+
+.dateInput {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  color: transparent;
+  -webkit-appearance: none;
+}
+
+.dateInput:focus {
+  outline: none;
+  background-color: var(--complement);
+  opacity: .5;
+}

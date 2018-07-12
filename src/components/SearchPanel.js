@@ -1,6 +1,9 @@
+import { format } from 'date-fns'
 import cx from 'classnames'
 import { h } from '../../framework'
 import Icon from './Icon'
+import fromIcon from '../icons/date-from.svg'
+import toIcon from '../icons/date-to.svg'
 import searchIcon from '../icons/search.svg'
 import styles from './SearchPanel.css'
 
@@ -60,15 +63,21 @@ const ChannelTag = ({ tagName }) => (state, actions) => {
 }
 
 export const getSearchText = (state) => {
-  const { activeChannelTags, activeDateTag } = state.searchPanel
+  const { activeChannelTags, activeDateTag, dateFields } = state.searchPanel
   if (!activeDateTag && activeChannelTags.length === 0) return 'All activities'
   const channelSearchText =
     activeChannelTags.length > 0
       ? activeChannelTags.join(' & ') + ' activities '
       : ''
-  const dateSearchText = activeDateTag
-    ? activeDateTag.toLowerCase()
-    : 'any time.'
+  let dateSearchText
+  if (activeDateTag === 'LATER') {
+    dateSearchText = `from ${format(dateFields.from, 'DD/MM')} to ${format(
+      dateFields.to,
+      'DD/MM',
+    )}`
+  } else {
+    dateSearchText = activeDateTag ? activeDateTag.toLowerCase() : 'any time.'
+  }
   let searchText
   if (!channelSearchText) {
     searchText = `Activities at ${dateSearchText}`
@@ -105,12 +114,48 @@ const handleSearch = (state, actions) => {
 }
 
 export default () => (state, actions) => {
+  const { activeDateTag, dateFields } = state.searchPanel
   return (
     <section className={styles.root} ondestroy={actions.searchPanel.reset}>
       <div className={styles.sectionTitle}>DATE</div>
       <div className={styles.dateTagSection}>
         {dateTags.map((tagName) => <DateTag tagName={tagName} key={tagName} />)}
       </div>
+      {activeDateTag === 'LATER' && (
+        <div className={styles.dateInputContainer}>
+          <Icon src={fromIcon} width={12} height={10} topOffset={-1} />
+          <div className={styles.fakeDateInput}>
+            {format(dateFields.from, 'DD/MM/YYYY')}
+            <input
+              onchange={(e) =>
+                actions.searchPanel.changeSearchDateField(
+                  'from',
+                  new Date(e.target.value),
+                )
+              }
+              value={format(dateFields.from, 'YYYY-MM-DD')}
+              className={styles.dateInput}
+              type="date"
+            />
+          </div>
+          <span className={styles.dateSeperator} />
+          <Icon src={toIcon} width={12} height={10} topOffset={-1} />
+          <div className={styles.fakeDateInput}>
+            {format(dateFields.to, 'DD/MM/YYYY')}
+            <input
+              onchange={(e) =>
+                actions.searchPanel.changeSearchDateField(
+                  'to',
+                  new Date(e.target.value),
+                )
+              }
+              value={format(dateFields.to, 'YYYY-MM-DD')}
+              className={styles.dateInput}
+              type="date"
+            />
+          </div>
+        </div>
+      )}
       <div className={cx(styles.sectionTitle, styles.secondChannel)}>
         CHANNEL
       </div>
