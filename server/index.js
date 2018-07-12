@@ -37,7 +37,7 @@ app.get('/activities', (req, res) => {
         is_end: false,
       },
     })
-  }, 1000)
+  }, 500)
 })
 
 app.get('/activities/:id', (req, res) => {
