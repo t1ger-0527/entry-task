@@ -8,7 +8,8 @@ export const defaultDetailPageState = {
   userListsExpanded: {
     going: false,
     liked: false,
-  }
+  },
+  isSidePanelActive: false,
 }
 
 export default {

@@ -23,7 +23,5 @@ html {
 }
 
 :global(#root) {
-  max-width: 600px;
-  margin: auto;
   background-color: var(--global-background);
 }

@@ -1,3 +1,4 @@
+import cx from 'classnames'
 import {h} from '../../framework'
 import {Link} from '../../router'
 import Icon from './Icon'
@@ -9,9 +10,9 @@ import styles from './TopNav.css'
 export default (props) => (state, actions) => {
   const isIndex = state.location && state.location.pathname === '/'
   return (
-    <nav className={styles.root}>
+    <nav className={cx(styles.root, {[styles.sidePanelActive]: state.isSidePanelActive})}>
       {isIndex ? (
-        <button className={styles.left}>
+        <button className={styles.left} onclick={() => actions.toggleSidePanel()}>
           <Icon size={24} src={search} />
         </button>
       ) : (

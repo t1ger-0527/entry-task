@@ -1,0 +1,23 @@
+.root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 75%;
+  max-width: 300px;
+  height: 100vh;
+  perspective: 800px;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-dark);
+  transform: scale(0.9) rotate3d(1, 0, 0, -10deg);
+  transform-origin: center center;
+  transition: transform .2s ease;
+  transition-delay: .1s;
+}
+
+.active {
+  transform: scale(1);
+}

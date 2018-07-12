@@ -5,7 +5,6 @@ import Spinner from './Spinner'
 import styles from './Index.css'
 
 const fetchActivity = (query = '', actions, mode = 'replace') => {
-  console.log('trigger fetch')
   actions.startSearchActivities()
   fetch('http://10.22.203.174:2333/activities')
     .then((res) => res.json())

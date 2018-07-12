@@ -1,7 +1,7 @@
 import once from 'once'
 import { merge, mergeIds } from '../helpers/state'
 import { location } from '../../router'
-import {defaultDetailPageState} from "../state";
+import { defaultDetailPageState } from '../state'
 
 const fetchSelf = () => () =>
   fetch('http://10.22.203.174:2333/me', { credentials: 'include' })
@@ -47,12 +47,35 @@ export default {
       replyingTo: replyingTo && replyingTo.id === replyTo.id ? null : replyTo,
       commenting: true,
     }),
-    expandUserList: (key) => ({userListsExpanded}) => ({
+    expandUserList: (key) => ({ userListsExpanded }) => ({
       userListsExpanded: {
         ...userListsExpanded,
         [key]: true,
-      }
-    })
+      },
+    }),
+  },
+  locationChanged: () => (state) => {
+    // global location change hook.
+    return {
+      isSidePanelActive: false,
+    }
+  },
+  toggleSidePanel: (onOff) => (state) => {
+    if (onOff == null) {
+      onOff = !state.isSidePanelActive
+    }
+    if (onOff) {
+      Object.assign(document.documentElement.style, {
+        overflow: 'hidden',
+      })
+    } else {
+      Object.assign(document.documentElement.style, {
+        overflow: 'initial',
+      })
+    }
+    return {
+      isSidePanelActive: onOff,
+    }
   },
 }
 

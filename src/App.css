@@ -1,3 +1,42 @@
 .root {
+  position: relative;
+}
+
+.pageContent {
   padding-top: var(--nav-height);
+  position: relative;
+  z-index: 2;
+  background-color: var(--global-background);
+  transition: transform .3s ease;
+  transform: none;
+}
+
+.sidePanelActive {
+  position: relative;
+}
+
+@media (max-width: 400px) {
+  .pageContent.sidePanelActive {
+    transform: translateX(75vw);
+  }
+}
+
+@media (min-width: 400px) {
+  .pageContent.sidePanelActive {
+    transform: translateX(300px);
+  }
+}
+
+.touchBlocker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+}
+
+.routes {
+  max-width: 600px;
+  margin: auto;
 }

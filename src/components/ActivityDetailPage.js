@@ -160,7 +160,7 @@ const handleSubmitComment = (activity, replyingTo, e, actions) => {
       actions.detailPage.toggleCommenting()
       setTimeout(() => {
         window.scrollTo({
-          top: document.documentElement.getBoundingClientRect().height,
+          top: document.scrollingElement.getBoundingClientRect().height,
         })
       }, 16.667)
     })

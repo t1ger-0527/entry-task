@@ -6,4 +6,4 @@ import App from './App'
 import { location } from '../router'
 
 const wiredActions = app(state, actions, App, document.getElementById('root'))
-location.subscribe(wiredActions.location)
+location.subscribe(wiredActions)

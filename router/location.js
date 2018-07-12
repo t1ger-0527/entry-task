@@ -13,9 +13,12 @@ export default {
   // call subscribe to initiate the hijack of history.
   subscribe: (actions) => {
     const handleLocationChange = (e) => {
-      actions.set({
+      actions.location.set({
         pathname: window.location.pathname,
       })
+      if (actions.locationChanged) {
+        actions.locationChanged()
+      }
     }
 
     // monkey-patch the history API
