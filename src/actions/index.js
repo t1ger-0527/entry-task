@@ -108,6 +108,11 @@ export default {
       activeChannelTags: [],
     })
   },
+  updateCurrentSearching: (currentSearching) => (state) => {
+    return {
+      currentSearching,
+    }
+  }
 }
 
 export function performActionOnActivity(activity, actionName, actions, event) {

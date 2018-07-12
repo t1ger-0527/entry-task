@@ -7,7 +7,7 @@
   padding-top: var(--nav-height);
   position: relative;
   z-index: 2;
-  background-color: var(--global-background);
+  background-color: #fff;
   transition: transform .3s ease;
   transform: none;
 }

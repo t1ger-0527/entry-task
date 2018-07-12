@@ -32,7 +32,7 @@ const App = () => (state, actions) => (
       })}
     >
       <Routes />
-      {state.isSidePanelActive && <TouchBlocker />}
+      {state.isSidePanelActive ? <TouchBlocker /> : ''}
     </div>
     <SidePanel />
   </div>

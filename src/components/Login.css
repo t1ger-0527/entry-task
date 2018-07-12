@@ -9,6 +9,8 @@
   background-repeat: no-repeat;
   background-size: auto calc(100% - 64px);
   text-align: center;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .mask {

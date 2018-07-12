@@ -61,7 +61,7 @@
   top: var(--nav-height);
   display: flex;
   border-bottom: var(--border);
-  background-color: #faf9fc;
+  background-color: #fff;
 }
 
 /**
@@ -97,6 +97,7 @@
 }
 
 .detail {
+  background-color: var(--background);
   position: relative;
   padding: var(--gap) 0;
   border-bottom: var(--border);
@@ -161,7 +162,7 @@
     to bottom,
     rgba(255, 255, 255, 0),
     rgba(250, 249, 252, 0.7) 30%,
-    #faf9fc
+    var(--background)
   );
 }
 
@@ -181,12 +182,14 @@
 }
 
 .marginPlaceholder {
+  background-color: var(--background);
   height: var(--gap);
   margin-left: var(--gap);
   border-bottom: var(--border);
 }
 
 .detailSection {
+  background-color: var(--background);
   padding-top: var(--gap);
   margin: 0 var(--gap);
 }
@@ -275,6 +278,7 @@
 }
 
 .commentSection {
+  background-color: var(--background);
   position: relative;
   padding: 24px var(--gap) var(--gap);
 }
@@ -424,6 +428,7 @@
 
 .goingUserList,
 .likingUserList {
+  background-color: var(--background);
   flex: 1;
   display: flex;
   padding: var(--gap);
@@ -477,7 +482,6 @@
   height: 24px;
   border-radius: 50%;
   border: 1px solid var(--primary-light);
-  background-color: var(--global-background);
   padding: 0;
 }
 

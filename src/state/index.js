@@ -23,5 +23,6 @@ export default {
   searchPanel: {
     activeDateTag: null,
     activeChannelTags: [],
-  }
+  },
+  currentSearching: null,
 }

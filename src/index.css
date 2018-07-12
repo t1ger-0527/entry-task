@@ -23,5 +23,5 @@ html {
 }
 
 :global(#root) {
-  background-color: var(--global-background);
+  background-color: #fff;
 }

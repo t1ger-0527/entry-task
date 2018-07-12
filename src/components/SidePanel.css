@@ -4,7 +4,7 @@
   left: 0;
   width: 75vw;
   max-width: 300px;
-  height: calc(100% + 0px);
+  height: calc(100vh + 0px);
   perspective: 800px;
 }
 

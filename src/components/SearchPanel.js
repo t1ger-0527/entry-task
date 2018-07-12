@@ -59,7 +59,7 @@ const ChannelTag = ({ tagName }) => (state, actions) => {
   )
 }
 
-const SearchDetail = () => (state) => {
+export const getSearchText = (state) => {
   const { activeChannelTags, activeDateTag } = state.searchPanel
   if (!activeDateTag && activeChannelTags.length === 0) return 'All activities'
   const channelSearchText =
@@ -75,6 +75,11 @@ const SearchDetail = () => (state) => {
   } else {
     searchText = `${channelSearchText}${dateSearchText}`
   }
+  return searchText
+}
+
+const SearchDetail = () => (state) => {
+  const searchText = getSearchText(state)
   return <div className={styles.searchText}>{searchText}</div>
 }
 
@@ -86,11 +91,16 @@ const handleSearch = (state, actions) => {
   actions.toggleSidePanel(false)
   const query = getSearchQueryFromState(state)
   actions.startSearchActivities('replace')
+  actions.updateCurrentSearching(null)
   fetch(`http://10.22.203.174:2333/activities?${query}`)
     .then((res) => res.json())
     .then(({ data: activities }) => {
       actions.updateActivities(activities)
       actions.searchActivitiesSuccess(activities, 'replace')
+      actions.updateCurrentSearching({
+        ...state.searchPanel,
+        resultCount: Math.ceil(Math.random()) * 90 + 50,
+      })
     })
 }
 
@@ -109,7 +119,10 @@ export default () => (state, actions) => {
           <ChannelTag tagName={tagName} key={tagName} />
         ))}
       </div>
-      <button className={styles.submit} onclick={() => handleSearch(state, actions)}>
+      <button
+        className={styles.submit}
+        onclick={() => handleSearch(state, actions)}
+      >
         <div className={styles.submitText}>
           <Icon className={styles.searchIcon} src={searchIcon} size={14} />
           SEARCH
