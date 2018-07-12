@@ -2,9 +2,9 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 75%;
+  width: 75vw;
   max-width: 300px;
-  height: 100vh;
+  height: calc(100% + 0px);
   perspective: 800px;
 }
 

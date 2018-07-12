@@ -1,3 +1,89 @@
 .root {
+  position: relative;
+  padding: 10px var(--gap);
+  text-align: center;
+  height: 100%;
+}
 
+.sectionTitle {
+  display: inline-block;
+  padding-top: 10px;
+  font-size: 12px;
+  color: #AC8EC9;
+  font-weight: 600;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--primary);
+  margin-bottom: 7px;
+}
+
+.dateTag {
+  padding: 3px 8px;
+  margin-top: 5px;
+  border-radius: 12px;
+  line-height: 18px;
+  font-size: 14px;
+  color: #E8E8E8;
+  outline:0;
+}
+
+.dateTag.active {
+  background-color: var(--complement-light);
+  color: var(--primary-dark);
+}
+
+.dateTagSection {
+  text-align: left;
+}
+
+.secondChannel {
+  margin-top: 24px;
+}
+
+.channelTagSection {
+  text-align: left;
+  margin-bottom: 4px;
+}
+
+.channelTag {
+  padding: 4px 8px;
+  border-radius: 12px;
+  border: 1px solid #D3C1E5;
+  font-size: 12px;
+  line-height: 15px;
+  color: #fff;
+  margin-right: 12px;
+  margin-top: 9px;
+}
+
+.channelTag.active {
+  border: 1px solid var(--complement-light);
+  background-color: var(--complement-light);
+  color: var(--primary-dark);
+}
+
+.submit {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: var(--gap) var(--gap) 13px var(--gap);
+  background-color: var(--complement);
+}
+
+.submitText {
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.searchIcon {
+  margin-right: 6px;
+}
+
+.searchText {
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--primary);
+  line-height: 13px;
 }

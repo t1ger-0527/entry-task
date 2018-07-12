@@ -20,4 +20,8 @@ export default {
   searchingActivities: false,
   detailNavActiveIndex: 0,
   detailPage: defaultDetailPageState,
+  searchPanel: {
+    activeDateTag: null,
+    activeChannelTags: [],
+  }
 }

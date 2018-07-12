@@ -23,8 +23,9 @@ export default {
       searchActivityIds: mergeIds(state.searchActivityIds, activities, mode),
     }
   },
-  startSearchActivities: () => (state) => ({
+  startSearchActivities: (mode) => (state) => ({
     searchingActivities: true,
+    searchActivityIds: mode === 'replace' ? [] : state.searchActivityIds,
   }),
   fetchSelf,
   fetchSelfOnce,
@@ -76,6 +77,36 @@ export default {
     return {
       isSidePanelActive: onOff,
     }
+  },
+  searchPanel: {
+    toggleDateTag: (tagName) => (state) => {
+      if (state.activeDateTag === tagName || tagName === 'ANYTIME') {
+        return {
+          activeDateTag: null,
+        }
+      }
+      return {
+        activeDateTag: tagName,
+      }
+    },
+    toggleChannelTag: (tagName) => (state) => {
+      const {activeChannelTags} = state
+      const index = activeChannelTags.findIndex(t => t === tagName)
+      if (tagName === 'All') {
+        return {activeChannelTags: []}
+      } else if (index !== -1) {
+        activeChannelTags.splice(index, 1)
+      } else {
+        activeChannelTags.push(tagName)
+      }
+      return {
+        activeChannelTags
+      }
+    },
+    reset: () => ({
+      activeDateTag: null,
+      activeChannelTags: [],
+    })
   },
 }
 
