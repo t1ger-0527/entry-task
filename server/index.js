@@ -29,13 +29,15 @@ app.get('/', (req, res) => {
 })
 
 app.get('/activities', (req, res) => {
-  res.send({
-    data: times(activity, 6),
-    paging: {
-      next: '/activities',
-      is_end: false,
-    },
-  })
+  setTimeout(() => {
+    res.send({
+      data: times(activity, 6),
+      paging: {
+        next: '/activities',
+        is_end: false,
+      },
+    })
+  }, 300)
 })
 
 app.get('/activities/:id', (req, res) => {
