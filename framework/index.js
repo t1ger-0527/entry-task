@@ -195,19 +195,6 @@ export function app(state, actions, view, container) {
           continue
         }
 
-        // FIXME
-        // if (
-        //   newKey != null &&
-        //   newKey === getKey(oldChildren[oldChildrenPtr + 1])
-        // ) {
-        //   debugger
-        //   if (oldKey == null) {
-        //     removeElement(rootElement, oldChildElement, oldChild)
-        //   }
-        //   oldChildrenPtr++
-        //   continue
-        // }
-
         if (newKey == null || firstRender) {
           if (oldKey == null) {
             // both have no key, try to reuse the old element.
