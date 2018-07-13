@@ -110,20 +110,33 @@ const CommentItem = ({ comment, activity, key }) => {
   }
   return (
     <div key={key} className={styles.commentItem}>
-      <img
-        className={styles.commentAuthorAvatar}
-        src={author.avatarUrl}
-        alt="comment author avatar"
-      />
+      <Link
+        to={`/users/${author.id}`}
+        className={styles.commentAuthorAvatarContainer}
+      >
+        <img
+          className={styles.commentAuthorAvatar}
+          src={author.avatarUrl}
+          alt="comment author avatar"
+        />
+      </Link>
+
       <div className={styles.commentContentContainer}>
-        <div className={styles.commentAuthor}>
+        <Link
+          to={`/users/${comment.author.id}`}
+          className={styles.commentAuthor}
+        >
           {comment.author.name}
           <span className={styles.commentCreateTime}>
             {distanceInWordsStrict(Date.now(), comment.created)} ago
           </span>
-        </div>
+        </Link>
         <div className={styles.commentContent}>
-          {replying && <span className={styles.mention}>@{replying.name}</span>}{' '}
+          {replying && (
+            <Link to={`/users/${replying.id}`} className={styles.mention}>
+              @{replying.name}
+            </Link>
+          )}{' '}
           {comment.content}
         </div>
       </div>
@@ -406,7 +419,7 @@ export default ({ params }) => (state, actions) => {
           {channels.map((c) => <ChannelItem channel={c} key={c.id} />)}
         </div>
         <h1 className={styles.title}>{title}</h1>
-        <div className={styles.user}>
+        <Link to={`/users/${starter.id}`} className={styles.user}>
           <img
             className={styles.userAvatar}
             src={starter.avatarUrl}
@@ -416,7 +429,7 @@ export default ({ params }) => (state, actions) => {
             <div className={styles.userName}>{starter.name}</div>
             <div className={styles.publishTime}>Published 2 days ago.</div>
           </span>
-        </div>
+        </Link>
       </header>
     )
 

@@ -1,4 +1,6 @@
-import {h} from '../framework'
+import cx from 'classnames'
+import { h } from '../framework'
+import matchRoutes from './matchRoute'
 
 const Link = (props, children) => (state, actions) => {
   const originalClickHandler = props.onclick
@@ -19,7 +21,7 @@ const Link = (props, children) => (state, actions) => {
       e.ctrlKey ||
       e.shiftKey ||
       // if opening in another tab, we do nothing.
-      props.target === "_blank"
+      props.target === '_blank'
     ) {
       // do nothing
     } else {
@@ -27,12 +29,28 @@ const Link = (props, children) => (state, actions) => {
       e.preventDefault()
 
       // we only pushState when we jump to a different route.
-      if (props.to !== location.pathname) {
-        window.history.pushState(location.pathname , "", props.to)
+      if (props.to !== window.location.pathname) {
+        window.history.pushState(window.location.pathname, '', props.to)
       }
     }
   }
-  return <a {...props} onclick={clickHandler}>{children}</a>
+  const match = matchRoutes(props.to, window.location.pathname)
+  const additionalClassNames = props.activeClassName ? {
+    [props.activeClassName]: match,
+  } : null
+  if (props.render) {
+    children = props.render(match)
+  }
+  return (
+    <a
+      {...props}
+      className={cx(props.className, additionalClassNames)}
+      active={!!match}
+      onclick={clickHandler}
+    >
+      {children}
+    </a>
+  )
 }
 
 export default Link

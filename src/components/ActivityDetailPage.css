@@ -25,6 +25,7 @@
 }
 
 .user {
+  display: block;
   margin-top: 24px;
 }
 
@@ -291,9 +292,14 @@
   margin-top: var(--gap);
 }
 
-.commentAuthorAvatar {
+.commentAuthorAvatarContainer {
   flex-shrink: 0;
   flex-grow: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.commentAuthorAvatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -325,6 +331,7 @@
 }
 
 .commentAuthor {
+  display: block;
   font-size: 12px;
   line-height: 15px;
   color: var(--primary);
@@ -483,6 +490,7 @@
   border-radius: 50%;
   border: 1px solid var(--primary-light);
   padding: 0;
+  background-color: var(--background);
 }
 
 .userAvatarLine {

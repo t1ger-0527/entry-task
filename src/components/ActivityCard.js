@@ -20,22 +20,22 @@ export default ({ activityId, key }) => (state, actions) => {
   const returnTimeText = toTimeText(detail.returnTime)
 
   return (
-    <Link to={`/activities/${activity.id}`} className={styles.root} key={key}>
+    <div className={styles.root} key={key}>
       <div key="head" className={styles.head}>
-        <div className={styles.user}>
+        <Link className={styles.user} to={`/users/${starter.id}`}>
           <img
             className={styles.avatar}
             src={starter.avatarUrl}
             alt={`${starter.name}'s avatar`}
           />
           <span className={styles.userName}>{starter.name}</span>
-        </div>
+        </Link>
         <ChannelItem channel={channels[0]} />
       </div>
-      <div key="title" className={styles.title}>
+      <Link to={`/activities/${activity.id}`} key="title" className={styles.title}>
         {title}
-      </div>
-      <div key="time" className={styles.time}>
+      </Link>
+      <Link to={`/activities/${activity.id}`} key="time" className={styles.time}>
         <Icon
           className={styles.timeIcon}
           size={12}
@@ -45,10 +45,10 @@ export default ({ activityId, key }) => (state, actions) => {
         <span className={styles.timeText}>
           {leavingTimeText} - {returnTimeText}
         </span>
-      </div>
-      <div className={styles.description}>
+      </Link>
+      <Link to={`/activities/${activity.id}`} className={styles.description}>
         {truncate(detail.description, 170)}
-      </div>
+      </Link>
       <div className={styles.actions}>
         <button
           onclick={performActionOnActivity.bind(
@@ -89,6 +89,6 @@ export default ({ activityId, key }) => (state, actions) => {
           {activity.meLiking ? 'I like it!' : `${activity.liked.length} Likes`}
         </button>
       </div>
-    </Link>
+    </div>
   )
 }

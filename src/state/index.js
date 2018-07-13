@@ -31,4 +31,5 @@ export default {
   searchPanel: defaultSearchPanelState,
   currentSearching: null,
   isSidePanelActive: false,
+  userMap: {},
 }

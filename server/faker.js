@@ -43,6 +43,10 @@ const user = genWithSaving(userMap, (o) =>
       id: id('user'),
       name: faker.internet.userName(),
       avatarUrl: faker.image.avatar(),
+      email: faker.internet.email(),
+      likeCount: Math.ceil(Math.random() * 10 + 10),
+      goCount: Math.ceil(Math.random() * 10 + 10),
+      pastCount: Math.ceil(Math.random() * 10 + 10),
     },
     o,
   )

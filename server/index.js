@@ -56,15 +56,20 @@ app.get('/me', (req, res) => {
     res.sendStatus(401)
   } else {
     const id = req.cookies['_e']
-    res.send(user({ id, name: id }))
+    res.send(user({id}))
   }
 })
 
 app.post('/login', (req, res) => {
   const { email } = req.body
-  const userName = email.split('@')[0]
-  res.cookie('_e', userName, { maxAge: 900000 })
+  const id = email.split('@')[0]
+  user({ id, name: id, email })
+  res.cookie('_e', id, { maxAge: 900000 })
   res.sendStatus(200)
+})
+
+app.get('/users/:id', (req, res) => {
+  res.send(user({id: req.params.id}))
 })
 
 app.post('/activities/:id/comments', (req, res) => {

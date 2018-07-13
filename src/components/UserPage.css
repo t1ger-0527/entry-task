@@ -1,0 +1,90 @@
+.root {
+
+}
+
+.header {
+  padding: 36px 0 24px;
+  text-align: center;
+  border-bottom: var(--border);
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+}
+
+.avatarContainer {
+  box-sizing: content-box;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  margin: auto;
+  border: 3px solid var(--primary-light);
+  object-fit: cover;
+  background-color: #eee;
+}
+
+.userName {
+  margin-top: 24px;
+  font-size: 24px;
+  line-height: 29px;
+  color: var(--primary-neutral);
+}
+
+.emailAddress {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 17px;
+  color: var(--primary);
+}
+
+.mailIcon {
+  margin-right: 6px;
+}
+
+.nav {
+  z-index: 1;
+  position: sticky;
+  top: var(--nav-height);
+  display: flex;
+  border-bottom: var(--border);
+  background-color: #fff;
+}
+
+/**
+ * FIXME: it would look bad on small screen. fix it
+  */
+.navItem {
+  position: relative;
+  flex: 1;
+  text-align: center;
+  overflow: visible;
+  padding: var(--gap) 4px;
+  color: #8c8c8c;
+}
+
+.navItem + .navItem::after {
+  display: block;
+  content: ' ';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 11px;
+  width: 1px;
+  border-left: var(--border);
+  transform: translateY(-50%);
+}
+
+.navIcon {
+  margin-right: 7px;
+}
+
+.activeNavItem {
+  color: var(--complement);
+}
+
+.spinnerContainer {
+  text-align: center;
+  padding: 10px 0;
+}

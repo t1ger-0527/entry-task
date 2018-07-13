@@ -2,6 +2,7 @@ import once from 'once'
 import { merge, mergeIds } from '../helpers/state'
 import { location } from '../../router'
 import { defaultDetailPageState } from '../state'
+import { getSearchQueryFromState } from '../components/SearchPanel'
 
 const fetchSelf = () => () =>
   fetch('http://10.22.203.174:2333/me', { credentials: 'include' })
@@ -12,7 +13,7 @@ const fetchSelfOnce = once(fetchSelf)
 
 export default {
   location: location.actions,
-  updateActivities: (activities) => (state) => {
+  updateActivities: (activities) => (state, actions) => {
     return {
       activityMap: merge(state.activityMap, activities),
     }
@@ -84,6 +85,16 @@ export default {
       isSidePanelActive: onOff,
     }
   },
+  updateUserMap: (users) => (state, actions) => {
+    return {
+      userMap: merge(state.userMap, users),
+    }
+  },
+  fetchUser: (userId) => (state, actions) => {
+    fetch(`http://10.22.203.174:2333/users/${userId}`)
+      .then((res) => res.json())
+      .then((user) => actions.updateUserMap(user))
+  },
   searchPanel: {
     toggleDateTag: (tagName) => (state, actions) => {
       if (state.activeDateTag === tagName || tagName === 'ANYTIME') {
@@ -97,7 +108,7 @@ export default {
           dateFields: {
             from: Date.now(),
             to: Date.now(),
-          }
+          },
         }
       } else {
         return {
@@ -111,33 +122,48 @@ export default {
         dateFields: {
           ...state.dateFields,
           [field]: value,
-        }
+        },
       }
     },
     toggleChannelTag: (tagName) => (state) => {
-      const {activeChannelTags} = state
-      const index = activeChannelTags.findIndex(t => t === tagName)
+      const { activeChannelTags } = state
+      const index = activeChannelTags.findIndex((t) => t === tagName)
       if (tagName === 'All') {
-        return {activeChannelTags: []}
+        return { activeChannelTags: [] }
       } else if (index !== -1) {
         activeChannelTags.splice(index, 1)
       } else {
         activeChannelTags.push(tagName)
       }
       return {
-        activeChannelTags
+        activeChannelTags,
       }
     },
     reset: () => ({
       activeDateTag: null,
       activeChannelTags: [],
-    })
+    }),
   },
   updateCurrentSearching: (currentSearching) => (state) => {
     return {
       currentSearching,
     }
-  }
+  },
+  fetchActivity: (mode) => (state, actions) => {
+    const query = getSearchQueryFromState(state)
+    actions.startSearchActivities(mode)
+    fetch(`http://10.22.203.174:2333/activities?${query}`)
+      .then((res) => res.json())
+      .then(({ data: activities }) => {
+        actions.updateActivities(activities)
+        actions.searchActivitiesSuccess(activities, mode)
+        activities = Array.isArray(activities) ? activities : [activities]
+        actions.updateUserMap(activities.map((a) => a.starter))
+        actions.updateUserMap(activities.reduce((users, activity) => {
+          return users.concat(activity.comments.map(c => c.author))
+        },[]))
+      })
+  },
 }
 
 export function performActionOnActivity(activity, actionName, actions, event) {

@@ -21,9 +21,9 @@ export default (props) => (state, actions) => {
         </Link>
       )}
       <Icon className={styles.logo} src={logoCat} />
-      <a href="javascript:;" className={styles.right}>
+      <Link to="/users/me" className={styles.right}>
         <img className={styles.avatar} src={state.self.avatarUrl} alt="my avatar" />
-      </a>
+      </Link>
     </nav>
   )
 }
