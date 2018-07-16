@@ -4,7 +4,7 @@
   left: 0;
   width: 75vw;
   max-width: 300px;
-  height: calc(100vh + 0px);
+  height: calc(100% + 0px);
   perspective: 800px;
 }
 
@@ -12,10 +12,10 @@
   width: 100%;
   height: 100%;
   background-color: var(--primary-dark);
-  transform: scale(0.9) rotate3d(1, 0, 0, -10deg);
+  transform: scale(0.96) rotate3d(1, 0, 0, -3deg);
   transform-origin: center center;
-  transition: transform .2s ease;
-  transition-delay: .1s;
+  transition: transform .35s ease;
+  transition-delay: .13s;
 }
 
 .active {

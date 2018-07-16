@@ -51,7 +51,6 @@ app.put('/activities/:id', (req, res) => {
 })
 
 app.get('/me', (req, res) => {
-  // TODO: impl the login.
   if (!req.cookies['_e']) {
     res.sendStatus(401)
   } else {

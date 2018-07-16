@@ -102,11 +102,12 @@ const TimeDisplay = ({ timestamp, iconSrc }) => {
   )
 }
 
-// TODO: mention should be clickable
 const CommentItem = ({ comment, activity, key }) => {
   const { author, replying } = comment
   const handleReplyButtonClick = (e, actions) => {
     actions.detailPage.toggleReplying(author)
+    const inputElement = document.getElementById('comment-input')
+    inputElement.focus()
   }
   return (
     <div key={key} className={styles.commentItem}>
@@ -156,10 +157,8 @@ const handlePageDestroy = (e, actions) => {
   actions.resetDetailPage()
 }
 
-const handleSubmitComment = (activity, replyingTo, e, actions) => {
-  e.preventDefault()
-  const content = e.target.elements[1].value
-  fetch(`http://10.22.203.174:2333/activities/${activity.id}/comments`, {
+const handleSubmitComment = (content, activity, replyingTo, actions) => {
+  return fetch(`http://10.22.203.174:2333/activities/${activity.id}/comments`, {
     method: 'POST',
     body: JSON.stringify({ content, replyingTo: replyingTo && replyingTo.id }),
     credentials: 'include',
@@ -169,14 +168,6 @@ const handleSubmitComment = (activity, replyingTo, e, actions) => {
   })
     .then((res) => res.json())
     .then((activity) => actions.updateActivities(activity))
-    .then(() => {
-      actions.detailPage.toggleCommenting()
-      setTimeout(() => {
-        window.scrollTo({
-          top: document.scrollingElement.getBoundingClientRect().height,
-        })
-      }, 16.667)
-    })
 }
 
 const handleTruncateTailClick = (e, actions) => {
@@ -188,12 +179,14 @@ const UserAvatarListLine = ({ users, key, isFlex }) => (
     {users.map(
       (user, index) =>
         user ? (
-          <img
-            className={styles.userAvatarItem}
-            key={user.id}
-            src={user.avatarUrl}
-            alt="user avatar"
-          />
+          <Link to={`/users/${user.id}`} className={styles.userAvatarItem}>
+            <img
+              className={styles.userAvatarItem}
+              key={user.id}
+              src={user.avatarUrl}
+              alt="user avatar"
+            />
+          </Link>
         ) : (
           <div className={styles.userAvatarItem} key={index} />
         ),
@@ -206,8 +199,17 @@ let anchors = []
 const alignUserList = (users, length) =>
   users.concat([...Array(length - users.length).keys()].map(() => null))
 const UserAvatarList = ({ users, key }) => (state, actions) => {
-  // TODO: decide maximun number by window size
-  const maxUserNumber = 7
+  let maxUserNumber = 7
+  const windowWidth = window.innerWidth
+  if (windowWidth < 340) {
+    maxUserNumber = 6
+  }
+  if (windowWidth > 400) {
+    maxUserNumber = 8
+  }
+  if (windowWidth > 599) {
+    maxUserNumber = 12
+  }
   const expanded = state.detailPage.userListsExpanded[key]
   const handleExpand = (e, actions) => {
     actions.detailPage.expandUserList(key)
@@ -252,11 +254,6 @@ export default ({ params }) => (state, actions) => {
   const activity = state.activityMap[activityId]
   const { isTruncated, commenting, replyingTo } = state.detailPage
   const { toggleCommenting } = actions.detailPage
-  const handleSubmitCommentImpl = handleSubmitComment.bind(
-    null,
-    activity,
-    replyingTo,
-  )
   const likeActivity = performActionOnActivity.bind(
     null,
     activity,
@@ -287,39 +284,74 @@ export default ({ params }) => (state, actions) => {
       meGoing,
     } = activity
 
-    const toolbarButtonSet = [
-      <button
-        key="comment"
-        className={styles.commentButton}
-        onclick={toggleCommenting}
-      >
-        <Icon src={commentPrimary} size={24} />
-      </button>,
-      <button key="like" className={styles.likeButton} onclick={likeActivity}>
-        <Icon src={meLiking ? likeComplement : likePrimary} size={24} />
-      </button>,
-      <button
-        key="go"
-        className={cx(styles.goButton, { [styles.activeButton]: meGoing })}
-        onclick={goActivity}
-      >
-        <Icon
-          className={styles.goIcon}
-          src={meGoing ? checkPrimary : checkComplement}
-          size={24}
-          topOffset={-6}
-        />
-        {meGoing ? 'I am going' : 'Join'}
-      </button>,
-    ]
+    const closeComment = (e) => {
+      e.preventDefault()
+      const inputElement = document.getElementById('comment-input')
+      inputElement.blur()
+      inputElement.value = ''
+      toggleCommenting(false)
+    }
+
+    const openComment = (e) => {
+      e.preventDefault()
+      const inputElement = document.getElementById('comment-input')
+      inputElement.focus()
+      toggleCommenting(true)
+    }
+
+    const handleSubmitCommentImpl = (e) => {
+      const inputElement = document.getElementById('comment-input')
+      const content = inputElement.value
+      closeComment(e)
+      handleSubmitComment(content, activity, replyingTo, actions)
+        .then(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo({
+              top: 9999,
+            })
+          })
+        })
+    }
+
+    const toolbarButtonSet = (
+      <div className={cx(styles.bottomToolbarButtons, { [styles.invisible]: commenting })}>
+        <button
+          key="comment"
+          className={styles.commentButton}
+          onclick={openComment}
+        >
+          <Icon src={commentPrimary} size={24} />
+        </button>
+        <button key="like" className={styles.likeButton} onclick={likeActivity}>
+          <Icon src={meLiking ? likeComplement : likePrimary} size={24} />
+        </button>
+        <button
+          key="go"
+          className={cx(styles.goButton, { [styles.activeButton]: meGoing })}
+          onclick={goActivity}
+        >
+          <Icon
+            className={styles.goIcon}
+            src={meGoing ? checkPrimary : checkComplement}
+            size={24}
+            topOffset={-6}
+          />
+          {meGoing ? 'I am going' : 'Join'}
+        </button>
+      </div>
+    )
 
     const toolbarCommentSection = (
-      <form className={styles.commentForm} onsubmit={handleSubmitCommentImpl}>
+      <form
+        className={cx(styles.commentForm, { [styles.invisible]: !commenting })}
+        onsubmit={handleSubmitCommentImpl}
+      >
         <div className={styles.inputContainer}>
-          <button className={styles.closeComment} onclick={toggleCommenting}>
+          <button className={styles.closeComment} onclick={closeComment}>
             <Icon src={closeIcon} size={16} />
           </button>
           <input
+            id="comment-input"
             autofocus
             oncreate={(e) => e.focus()}
             className={styles.commentInput}
@@ -500,7 +532,8 @@ export default ({ params }) => (state, actions) => {
         {commentNodes}
         <div className={styles.bottomToolBarPlaceholder} />
         <div className={styles.bottomToolBar}>
-          {commenting ? toolbarCommentSection : toolbarButtonSet}
+          {toolbarCommentSection}
+          {toolbarButtonSet}
         </div>
       </div>
     )

@@ -361,3 +361,12 @@ input {
   border: 0;
   background: transparent;
 }
+
+/**
+ * Remove the outline. (Good for design, bad for a11y)
+ * Better do some other highlight on the button:focused.
+ */
+a,
+button {
+  outline: none;
+}

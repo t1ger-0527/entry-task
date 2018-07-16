@@ -35,12 +35,12 @@ export default {
   }),
   detailPage: {
     expandDescription: () => () => ({ isTruncated: false }),
-    toggleCommenting: (e) => (state) => {
-      if (e && e.preventDefault) {
-        e.preventDefault()
+    toggleCommenting: (commenting) => (state) => {
+      if (commenting == null) {
+        commenting = !state.commenting
       }
       return {
-        commenting: !state.commenting,
+        commenting,
         replyingTo: state.commenting ? null : state.replyingTo,
       }
     },
