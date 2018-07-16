@@ -24,6 +24,13 @@ export default {
       searchActivityIds: mergeIds(state.searchActivityIds, activities, mode),
     }
   },
+  indexScrollHandler: () => (state, actions) => {
+    if (state.searchingActivities) return
+    const { bottom } = document.scrollingElement.getBoundingClientRect()
+    if (bottom < window.innerHeight + 100) {
+      actions.fetchActivity('append')
+    }
+  },
   startSearchActivities: (mode) => (state) => ({
     searchingActivities: true,
     searchActivityIds: mode === 'replace' ? [] : state.searchActivityIds,

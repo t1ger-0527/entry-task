@@ -35,21 +35,13 @@ const NavItem = ({ iconSrc, text, href }) => (state, actions) => {
 }
 
 let boundScrollHandler
-const THRESHOLD = 100
-const documentScrollHandler = (state, actions) => {
-  if (state.searchingActivities) return
-  const { bottom } = document.scrollingElement.getBoundingClientRect()
-  if (bottom < window.innerHeight + THRESHOLD) {
-    actions.fetchActivity('append')
-  }
-}
 
-const handleSpinnerCreate = (element, actions, state) => {
+const handleSpinnerCreate = (element, actions) => {
   if (boundScrollHandler) {
     document.removeEventListener('scroll', boundScrollHandler)
     boundScrollHandler = null
   }
-  boundScrollHandler = () => documentScrollHandler(state, actions)
+  boundScrollHandler = () => actions.indexScrollHandler()
   document.addEventListener('scroll', boundScrollHandler)
 }
 
